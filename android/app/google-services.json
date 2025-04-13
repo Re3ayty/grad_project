@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "889461080313",
+    "project_id": "re3ayty-1fbb5",
+    "storage_bucket": "re3ayty-1fbb5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:889461080313:android:e5bd572036e0d2aa12e228",
+        "android_client_info": {
+          "package_name": "com.example.hcs_grad_project"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBXMtaZsTXbR1degPg_h-iAJ5dOqEJIgnE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

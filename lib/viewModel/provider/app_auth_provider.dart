@@ -18,6 +18,7 @@ class AppAuthProvider extends ChangeNotifier {
         String ?medicalCondition,
         required String patientOrCaregiver,
         required bool allowCaregiverView,
+        required String relationship,
       }) async {
     var userCredential = await FirebaseAuth.instance
         .createUserWithEmailAndPassword(email: email, password: password);
@@ -32,6 +33,7 @@ class AppAuthProvider extends ChangeNotifier {
       medicalCondition:medicalCondition!.isEmpty?"":medicalCondition,
       patientOrCaregiver:patientOrCaregiver,
       allowCaregiverView:allowCaregiverView,
+        relationship:relationship,
     );
     await UsersDao.addUserToDatabase(user);
   }

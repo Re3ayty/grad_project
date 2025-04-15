@@ -8,9 +8,10 @@ class AppUser {
   String? medicalCondition;
   String? patientOrCaregiver;
   bool? allowCaregiverView;
+  String? relationship;
 
 
-  AppUser({this.id, this.userName, this.email, this.dateOfBirth,this.phone,this.gender, this.medicalCondition,this.patientOrCaregiver,this.allowCaregiverView});
+  AppUser({this.id, this.userName, this.email, this.dateOfBirth,this.phone,this.gender, this.medicalCondition,this.patientOrCaregiver,this.allowCaregiverView,this.relationship});
 
   AppUser.fromFireStore(Map<String, dynamic>? data)
       : this(
@@ -23,6 +24,7 @@ class AppUser {
     medicalCondition: data?['medicalCondition'],
     patientOrCaregiver: data?['patientOrCaregiver'],
     allowCaregiverView: data?['allowCaregiverView'],
+    relationship: data?['relationship'],
 
   );
 
@@ -37,6 +39,7 @@ class AppUser {
       'medicalCondition': medicalCondition,
       'patientOrCaregiver':patientOrCaregiver,
       'allowCaregiverView':allowCaregiverView,
+      'relationship':relationship,
 
     };
   }

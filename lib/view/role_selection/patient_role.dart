@@ -34,6 +34,7 @@ class _PatientRoleState extends State<PatientRole> {
   final medicalConditionController = TextEditingController();
   final patientOrCaregiverState = 'patient';
   String genderValue='';
+  String relationship='me';
 
   final formKey = GlobalKey<FormState>();
   String privacyPolicyText = '';
@@ -104,6 +105,7 @@ class _PatientRoleState extends State<PatientRole> {
                           "Patient",
                           style: GoogleFonts.getFont(
                             'Poppins', fontWeight: FontWeight.w500,
+                            fontSize: 30
                           ),
                           textScaler: TextScaler.linear(
                               ScaleSize.textScaleFactor(context)),
@@ -117,7 +119,8 @@ class _PatientRoleState extends State<PatientRole> {
                         Text(
                           "Share more about yourself to optimize your care.",
                           style: GoogleFonts.getFont(
-                            'Poppins', fontWeight: FontWeight.w500,
+                            'Poppins', fontWeight: FontWeight.w400,
+                            color: Colors.grey
                           ),
                           textScaler: TextScaler.linear(
                               ScaleSize.textScaleFactor(context)),
@@ -643,6 +646,7 @@ class _PatientRoleState extends State<PatientRole> {
                             genderValue,
                             patientOrCaregiverState,
                             allowCaregiverView,
+                            relationship,
                             medicalConditionController.text,
                           );
                         },
@@ -727,7 +731,7 @@ class _PatientRoleState extends State<PatientRole> {
     });
   }
   void createAccount(String email, String password, String userName,String dateOfBirth,
-      String phone, String gender,String patientOrCaregiver,bool allowCaregiverView,[String? medicalCondition]) async {
+      String phone, String gender,String patientOrCaregiver,bool allowCaregiverView,String relationship,[String? medicalCondition]) async {
     var authProvider = Provider.of<AppAuthProvider>(context, listen: false);
 
     setState(() {
@@ -750,6 +754,7 @@ class _PatientRoleState extends State<PatientRole> {
         dateOfBirth:dateOfBirth,
         phone:phone,
         gender:gender,
+        relationship:relationship,
         medicalCondition:medicalCondition!.isEmpty?"":medicalCondition,
         patientOrCaregiver:patientOrCaregiver,
           allowCaregiverView:allowCaregiverView,

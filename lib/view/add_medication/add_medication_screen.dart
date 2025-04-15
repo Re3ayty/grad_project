@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../utils/responsive_text.dart';
 import '../../viewModel/provider/app_auth_provider.dart';
 import '../Auth/select_page.dart';
+import '../filling/filling.dart';
 import 'multiSelesctDialog.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'dart:convert';
@@ -368,7 +369,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                                   {
                                     return 'Enter a start date';
                                   }
-                                  else if(value=='null/null/null')
+                                  else if(value=='null-null-null')
                                   {
                                     return 'Enter a start date';
                                   }
@@ -441,7 +442,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                                   {
                                     return 'Enter a end date';
                                   }
-                                  else if(value=='null/null/null')
+                                  else if(value=='null-null-null')
                                   {
                                     return 'Enter a end date';
                                   }
@@ -616,9 +617,9 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                         if (isDoseMissing || isContainerMissing || isIntakeMissing) {
                           return;
                         }
-                        logOut();
-                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) =>SelectPage()));
-                        //     CategoryPage()
+                        // logOut();
+                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) =>PillAnimationScreen()));
+                            // CategoryPage()
                         // ),
                         // );
                         },

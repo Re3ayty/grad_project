@@ -1,9 +1,12 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+// import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hcs_grad_project/view/settings/settings.dart';
 import 'package:provider/provider.dart';
 import '../../utils/responsive_text.dart';
+import '../../viewModel/firbase_realtime_dao.dart';
 import '../../viewModel/provider/app_auth_provider.dart';
 import 'box_status_card.dart';
 import 'medication_reminder.dart';
@@ -17,6 +20,12 @@ class PatientDashboard extends StatefulWidget {
 }
 
 class _PatientDashboardState extends State<PatientDashboard> {
+  DatabaseReference dbRefHumAndTemp = FirebaseDatabase.instance.ref().child("(BOX)Hum&Temp");
+  DatabaseReference dbRefBattery = FirebaseDatabase.instance.ref().child("battery");
+  DatabaseReference dbRefBoxStatus = FirebaseDatabase.instance.ref().child("devices");
+
+  // Query dbRef = FirebaseDatabase.instance.ref().child('(BOX)Hum&Temp');
+  // DatabaseReference reference = FirebaseDatabase.instance.ref().child('Students');
   String getGreeting() {
     final hour = DateTime.now().hour;
 
@@ -88,7 +97,117 @@ class _PatientDashboardState extends State<PatientDashboard> {
                   Expanded(
                     child: Column(
                       children: [
-                        BoxStatusCard(),
+                        // FirebaseAnimatedList(
+                        //   shrinkWrap: true,
+                        //   physics: NeverScrollableScrollPhysics(),
+                        //     query:dbRef,
+                        //   itemBuilder: (BuildContext context, DataSnapshot snapshot, Animation<double> animation, int index) {
+                        //
+                        //   Map HumAndTemp = snapshot.value as Map;
+                        //   HumAndTemp['key'] = snapshot.key;
+                        //
+                        //   return BoxStatusCard(HumAndTemp: HumAndTemp);
+                        //
+                        // },
+                        // // BoxStatusCard()
+                        //                   ),
+                        // FirebaseAnimatedList(
+                        //   query: dbRef,
+                        //   shrinkWrap: true,
+                        //   physics: NeverScrollableScrollPhysics(),
+                        //   itemBuilder: (BuildContext context, DataSnapshot snapshot, Animation<double> animation, int index) {
+                        //     if (snapshot.value == null) {
+                        //       return Center(child: Text("No data found"));
+                        //     }
+                        //
+                        //     Map<dynamic, dynamic> humAndTempMap = snapshot.value as Map<dynamic, dynamic>;
+                        //
+                        //     // Optional: Convert dynamic keys to string if needed
+                        //     Map<String, dynamic> cleanMap = {
+                        //       for (var entry in humAndTempMap.entries)
+                        //         entry.key.toString(): entry.value
+                        //     };
+                        //
+                        //     return FadeTransition(
+                        //       opacity: animation,
+                        //       child: BoxStatusCard(HumAndTemp: cleanMap),
+                        //     );
+                        //   },
+                        // ),
+////////////////////////////////////////// right////////////////////////////
+//                     StreamBuilder<DatabaseEvent>(
+//                     stream: dbRefHumAndTemp.onValue,
+//                     builder: (context, snapshot) {
+//                       if (snapshot.hasData && snapshot.data!.snapshot.value != null) {
+//                         final data = snapshot.data!.snapshot.value as Map;
+//
+//                         double temperature = data['temperature'] ?? 0.0;
+//                         double humidity = data['humidity'] ?? 0.0;
+//
+//                         return StreamBuilder(
+//                           stream: dbRefBattery.onValue,
+//                           builder: (context, snapshot) {
+//                             if (snapshot.hasData && snapshot.data!.snapshot.value != null) {
+//                               final data = snapshot.data!.snapshot.value as Map;
+//                               bool charging= data['charging'] ?? 0.0;
+//                               int percentage= data['percentage'] ?? 0.0;
+//                               double voltage= data['voltage'] ?? 0.0;
+//                               return StreamBuilder(
+//                                 stream: dbRefBoxStatus.onValue,
+//                               builder: (context, snapshot) {
+//                                   if (snapshot.hasData && snapshot.data!.snapshot.value != null) {
+//                                     final data = snapshot.data!.snapshot.value as Map;
+//                                     String status = data['status'];
+//                                     return BoxStatusCard(HumAndTempAndBattery: {
+//                                       'status': status,
+//                                       'temperature':temperature,
+//                                       'humidity': humidity,
+//                                       'percentage':percentage,
+//                                 });
+//                                 } else if (snapshot.hasError) {
+//                                 return Text("Error: ${snapshot.error}");
+//                                 } else {
+//                                 return CircularProgressIndicator();
+//                                 }
+//                               },
+//                               );
+//                             } else if (snapshot.hasError) {
+//                               return Text("Error: ${snapshot.error}");
+//                             } else {
+//                               return CircularProgressIndicator();
+//                             }
+//                             },
+//                         );
+//                       } else if (snapshot.hasError) {
+//                         return Text("Error: ${snapshot.error}");
+//                       } else {
+//                         return CircularProgressIndicator();
+//                       }
+//                     },
+//                   ),
+////////////////////////////////////////////////////////////////////////////////////
+                        StreamBuilder<DashboardData>(
+                          stream: getCombinedDashboardStream(),
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData) {
+                              final data = snapshot.data!;
+                              return BoxStatusCard(
+                                HumAndTempAndBattery: {
+                                  'temperature': data.temperature,
+                                  'humidity': data.humidity,
+                                  'percentage': data.batteryPercentage,
+                                  'status': data.status,
+                                },
+                              );
+                            } else if (snapshot.hasError) {
+                              return Text("Error: ${snapshot.error}");
+                            } else {
+                              return Center(child: CircularProgressIndicator());
+                            }
+                          },
+                        ),
+
+
                         SizedBox(height: 10),
                         EmergencyContactCard(),
                       ],

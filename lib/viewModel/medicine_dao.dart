@@ -1,0 +1,67 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../model/user_medicine.dart';
+
+class MedicineDao {
+  static CollectionReference<Map<String, dynamic>> getMedicinesCollection(
+      String uid) {
+    var db = FirebaseFirestore.instance;
+    return db.collection('usersInfo').doc(uid).collection('medication_to_take');
+  }
+
+  static Future<void> addMedicineToUser(String uid, MedicineUser medicine) {
+    var medicinesCollection = getMedicinesCollection(uid);
+    return medicinesCollection.add(medicine.toFireStore());
+  }
+
+  static Future<MedicineUser?> getMedicineForUser(
+      String uid, String medicineId) async {
+    var medicinesCollection = getMedicinesCollection(uid);
+    var docRef = medicinesCollection.doc(medicineId);
+    var docSnapshot = await docRef.get();
+    if (docSnapshot.exists) {
+      return MedicineUser.fromFireStore(docSnapshot.data());
+    }
+    return null;
+  }
+
+  static Future<List<MedicineUser>> getMedicinesForUser(String uid) async {
+    var medicinesCollection = getMedicinesCollection(uid);
+    var snapshot = await medicinesCollection.get();
+    return snapshot.docs
+        .map((doc) => MedicineUser.fromFireStore(doc.data()))
+        .toList();
+  }
+
+  static Future<void> updateMedicineForUser(
+      String uid, String medicineId, Map<String, dynamic> updatedData) async {
+    var medicinesCollection = getMedicinesCollection(uid);
+    var docRef = medicinesCollection.doc(medicineId);
+    await docRef.update(updatedData);
+  }
+
+  static Future<void> deleteMedicineForUser(
+      String uid, String medicineId) async {
+    var medicinesCollection = getMedicinesCollection(uid);
+    var docRef = medicinesCollection.doc(medicineId);
+    await docRef.delete();
+  }
+
+  // static Future<void> moveMedicineToHistory(
+  //     String uid, String medicineId) async {
+  //   var medicinesCollection = getMedicinesCollection(uid);
+  //   var docRef = medicinesCollection.doc(medicineId);
+  //   var docSnapshot = await docRef.get();
+
+  //   if (docSnapshot.exists) {
+  //     // Copy the document to a "history" subcollection
+  //     var historyCollection = FirebaseFirestore.instance
+  //         .collection('usersInfo')
+  //         .doc(uid)
+  //         .collection('medication_history');
+  //     await historyCollection.doc(medicineId).set(docSnapshot.data()!);
+
+  //     // Delete the original document from "medication_to_take"
+  //     await docRef.delete();
+  //   }
+  // }
+}

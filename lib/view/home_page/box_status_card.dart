@@ -7,8 +7,8 @@ import 'package:percent_indicator/circular_percent_indicator.dart';
 import '../../utils/responsive_text.dart';
 
 class BoxStatusCard extends StatefulWidget {
-  Map<String, dynamic> HumAndTempAndBattery;
-  BoxStatusCard({required this.HumAndTempAndBattery,});
+  Map<String, dynamic> boxStatusData;
+  BoxStatusCard({required this.boxStatusData,});
   @override
   State<BoxStatusCard> createState() => _BoxStatusCardState();
 }
@@ -18,10 +18,10 @@ class _BoxStatusCardState extends State<BoxStatusCard> {
 
   @override
   Widget build(BuildContext context) {
-    double temp = widget.HumAndTempAndBattery['temperature'];
-    double hum = widget.HumAndTempAndBattery['humidity'];
-    int batteryLevel=widget.HumAndTempAndBattery['percentage'];
-    String boxStatus=widget.HumAndTempAndBattery['status'];
+    double temp = widget.boxStatusData['temperature'];
+    double hum = widget.boxStatusData['humidity'];
+    int batteryLevel=widget.boxStatusData['percentage'];
+    String boxStatus=widget.boxStatusData['status'];
     dynamic h = MediaQuery.of(context).size.height;
     dynamic w = MediaQuery.of(context).size.width;
     bool highTemp= temp>=30;

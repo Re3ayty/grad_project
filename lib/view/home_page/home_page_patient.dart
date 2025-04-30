@@ -23,6 +23,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
   DatabaseReference dbRefHumAndTemp = FirebaseDatabase.instance.ref().child("(BOX)Hum&Temp");
   DatabaseReference dbRefBattery = FirebaseDatabase.instance.ref().child("battery");
   DatabaseReference dbRefBoxStatus = FirebaseDatabase.instance.ref().child("devices");
+  DatabaseReference dbRefHealthMetrics = FirebaseDatabase.instance.ref().child("healthMonitor");
 
   // Query dbRef = FirebaseDatabase.instance.ref().child('(BOX)Hum&Temp');
   // DatabaseReference reference = FirebaseDatabase.instance.ref().child('Students');
@@ -97,43 +98,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
                   Expanded(
                     child: Column(
                       children: [
-                        // FirebaseAnimatedList(
-                        //   shrinkWrap: true,
-                        //   physics: NeverScrollableScrollPhysics(),
-                        //     query:dbRef,
-                        //   itemBuilder: (BuildContext context, DataSnapshot snapshot, Animation<double> animation, int index) {
-                        //
-                        //   Map HumAndTemp = snapshot.value as Map;
-                        //   HumAndTemp['key'] = snapshot.key;
-                        //
-                        //   return BoxStatusCard(HumAndTemp: HumAndTemp);
-                        //
-                        // },
-                        // // BoxStatusCard()
-                        //                   ),
-                        // FirebaseAnimatedList(
-                        //   query: dbRef,
-                        //   shrinkWrap: true,
-                        //   physics: NeverScrollableScrollPhysics(),
-                        //   itemBuilder: (BuildContext context, DataSnapshot snapshot, Animation<double> animation, int index) {
-                        //     if (snapshot.value == null) {
-                        //       return Center(child: Text("No data found"));
-                        //     }
-                        //
-                        //     Map<dynamic, dynamic> humAndTempMap = snapshot.value as Map<dynamic, dynamic>;
-                        //
-                        //     // Optional: Convert dynamic keys to string if needed
-                        //     Map<String, dynamic> cleanMap = {
-                        //       for (var entry in humAndTempMap.entries)
-                        //         entry.key.toString(): entry.value
-                        //     };
-                        //
-                        //     return FadeTransition(
-                        //       opacity: animation,
-                        //       child: BoxStatusCard(HumAndTemp: cleanMap),
-                        //     );
-                        //   },
-                        // ),
+
 ////////////////////////////////////////// right////////////////////////////
 //                     StreamBuilder<DatabaseEvent>(
 //                     stream: dbRefHumAndTemp.onValue,
@@ -192,7 +157,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
                             if (snapshot.hasData) {
                               final data = snapshot.data!;
                               return BoxStatusCard(
-                                HumAndTempAndBattery: {
+                                boxStatusData: {
                                   'temperature': data.temperature,
                                   'humidity': data.humidity,
                                   'percentage': data.batteryPercentage,
@@ -214,7 +179,40 @@ class _PatientDashboardState extends State<PatientDashboard> {
                     ),
                   ),
                   SizedBox(width: 10),
-                  Expanded(child: HealthMetricsCard()),
+                  Expanded(
+                      child:
+                      StreamBuilder<DatabaseEvent>(
+                    stream: dbRefHealthMetrics.onValue,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData && snapshot.data!.snapshot.value != null) {
+                        final data = snapshot.data!.snapshot.value as Map;
+                        int avgBPM = data['avgBPM'] ?? 0;
+                        // int avgSpO2 = data['avgSpO2'] ?? 0.0;
+                        bool fingerPlaced = data['fingerPlaced'] ?? false;
+                        int liveBPM = data['liveBPM'] ?? 0;
+                        int liveSpO2= data['liveSpO2'] ?? 0;
+                        int processing= data['processing'] ?? 0;
+                        String status = data['status'] ?? 'Stopped';
+
+                        return HealthMetricsCard(
+                          healthMatrixData:{
+                            'avgBPM': avgBPM,
+                            // 'avgSpO2': avgSpO2,
+                            'fingerPlaced': fingerPlaced,
+                            'liveBPM': liveBPM,
+                            'liveSpO2': liveSpO2,
+                            'processing': processing,
+                            'status': status,
+                        },
+                        );
+                      } else if (snapshot.hasError) {
+                        return Text("Error: ${snapshot.error}");
+                      } else {
+                        return CircularProgressIndicator();
+                      }
+                    },
+                  ),
+                  ),
                 ],
               ),
 

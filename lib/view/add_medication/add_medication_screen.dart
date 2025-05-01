@@ -28,6 +28,8 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
   String intakeText = 'Add intake time';
   TextEditingController medicineController = TextEditingController();
   List<String> medicineList = [];
+  MedicineUser? newMedicine;
+  List<int> usedContainerNumbers = [];
 
   final formKey = GlobalKey<FormState>();
   int doseAmount = 0;
@@ -156,6 +158,19 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
   void initState() {
     super.initState();
     loadMedicineData();
+    fetchUserContainerNumbers();
+  }
+
+  void fetchUserContainerNumbers() async {
+    var authProvider = Provider.of<AppAuthProvider>(context, listen: false);
+    String? uid = authProvider.firebaseAuthUser?.uid;
+
+    if (uid != null) {
+      List<int> usedNumbers = await MedicineDao.getUsedContainerNumbers(uid);
+      setState(() {
+        usedContainerNumbers = usedNumbers;
+      });
+    }
   }
 
   Future<void> saveMedication() async {
@@ -174,10 +189,10 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
 
     List<String> formattedIntakeTimes =
         intakeTimes.map((time) => time.format(context)).toList();
-    MedicineUser newMedicine = MedicineUser(
+    newMedicine = MedicineUser(
       medName: medicineController.text,
       dose: doseAmount,
-      containerNumber: containerNumber.toString(),
+      containerNumber: containerNumber,
       ongoing: isOngoing,
       frequency: frequency,
       startDate: startDate,
@@ -187,7 +202,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
 
     //save to firestore
     try {
-      await MedicineDao.addMedicineToUser(uid, newMedicine);
+      await MedicineDao.addMedicineToUser(uid, newMedicine!);
       ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Medication added successfully")));
       Navigator.pop(context); // Navigate back to the previous screen
@@ -382,14 +397,20 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                               ),
                               DropdownButton<int>(
                                 value: containerNumber,
-                                items: [0, 1, 2, 3, 4, 5, 6]
+                                items: List.generate(6, (index) => index + 1)
                                     .map((num) => DropdownMenuItem(
                                         value: num,
+                                        enabled: !usedContainerNumbers
+                                            .contains(containerNumber),
                                         child: Text(
                                           '$num',
                                           style: GoogleFonts.getFont(
                                             'Poppins',
                                             fontWeight: FontWeight.w400,
+                                            color: usedContainerNumbers
+                                                    .contains(containerNumber)
+                                                ? Colors.grey
+                                                : Colors.black,
                                             // fontSize: 13,
                                           ),
                                           textScaler: TextScaler.linear(
@@ -397,11 +418,14 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                                                   context)),
                                         )))
                                     .toList(),
-                                onChanged: (value) {
-                                  setState(() {
-                                    containerNumber = value!;
-                                    print(containerNumber);
-                                  });
+                                onChanged: (value) async {
+                                  if (value != null &&
+                                      !usedContainerNumbers.contains(value)) {
+                                    setState(() {
+                                      containerNumber = value;                                    });
+                                  } else {
+                                    print("Container number $value is already in use.")
+                                  }
                                 },
                               ),
                             ],
@@ -750,7 +774,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                           borderRadius: BorderRadius.circular(6)),
                     ),
                   ),
-                  onPressed: () async {
+                  onPressed: () {
                     bool isDoseMissing = doseAmount == 0;
                     bool isContainerMissing = containerNumber == 0;
                     bool isIntakeMissing = intakeTimes.isEmpty;
@@ -771,12 +795,31 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                         isIntakeMissing) {
                       return;
                     }
-                    await saveMedication();
+                    //initialize authProvider and MedicineUser to save in the filled.dart file
+                    var authProvider =
+                        Provider.of<AppAuthProvider>(context, listen: false);
+                    String? uid = authProvider.firebaseAuthUser?.uid;
+                    List<String> formattedIntakeTimes = intakeTimes
+                        .map((time) => time.format(context))
+                        .toList();
+                    newMedicine = MedicineUser(
+                      medName: medicineController.text,
+                      dose: doseAmount,
+                      containerNumber: containerNumber,
+                      ongoing: isOngoing,
+                      frequency: frequency,
+                      startDate: startDate,
+                      endDate: isOngoing ? null : endDate,
+                      intakeTimes: formattedIntakeTimes,
+                    );
                     // logOut();
                     Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => PillAnimationScreen()));
+                            builder: (context) => PillAnimationScreen(
+                                  uid: uid!,
+                                  newMedicine: newMedicine!,
+                                )));
                     // CategoryPage()
                     // ),
                     // );

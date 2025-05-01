@@ -1,6 +1,10 @@
+import 'dart:typed_data';
+
+import 'package:intl/intl.dart';
+
 class MedicineUser {
   String? id;
-  String? containerNumber;
+  int? containerNumber;
   int? dose;
   String? frequency;
   String? medName;
@@ -21,10 +25,12 @@ class MedicineUser {
     this.intakeTimes,
   });
 
-  MedicineUser.fromFireStore(Map<String, dynamic>? data)
+  MedicineUser.fromFireStore(String docId, Map<String, dynamic>? data)
       : this(
-          id: data?['id'],
-          containerNumber: data?['container_no'],
+          id: docId, //assigned by firestore (document ID)
+          containerNumber: data?['container_no'] != null
+              ? int.tryParse(data!['container_no'].toString())
+              : null, //tp avoid type mismatch
           medName: data?['med_name'],
           frequency: data?['frequency'],
           dose: data?['dose'],
@@ -41,15 +47,15 @@ class MedicineUser {
         );
 
   Map<String, dynamic> toFireStore() {
+    final dateFormat = DateFormat('dd/MM/yyyy');
     return {
-      'id': id,
       'container_no': containerNumber,
       'med_name': medName,
       'dose': dose,
       'ongoing': ongoing,
       'frequency': frequency,
-      'start_date': startDate?.toIso8601String(),
-      'end_date': endDate?.toIso8601String(),
+      'start_date': startDate != null ? dateFormat.format(startDate!) : null,
+      'end_date': endDate != null ? dateFormat.format(endDate!) : null,
       'intake_times': intakeTimes,
     };
   }

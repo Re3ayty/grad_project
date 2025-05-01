@@ -19,7 +19,7 @@ class MedicineDao {
     var docRef = medicinesCollection.doc(medicineId);
     var docSnapshot = await docRef.get();
     if (docSnapshot.exists) {
-      return MedicineUser.fromFireStore(docSnapshot.data());
+      return MedicineUser.fromFireStore(docSnapshot.id, docSnapshot.data());
     }
     return null;
   }
@@ -28,7 +28,7 @@ class MedicineDao {
     var medicinesCollection = getMedicinesCollection(uid);
     var snapshot = await medicinesCollection.get();
     return snapshot.docs
-        .map((doc) => MedicineUser.fromFireStore(doc.data()))
+        .map((doc) => MedicineUser.fromFireStore(doc.id, doc.data()))
         .toList();
   }
 
@@ -46,22 +46,31 @@ class MedicineDao {
     await docRef.delete();
   }
 
-  // static Future<void> moveMedicineToHistory(
-  //     String uid, String medicineId) async {
-  //   var medicinesCollection = getMedicinesCollection(uid);
-  //   var docRef = medicinesCollection.doc(medicineId);
-  //   var docSnapshot = await docRef.get();
+  static Future<void> moveMedicineToHistory(
+      String uid, String medicineId) async {
+    var medicinesCollection = getMedicinesCollection(uid);
+    var docRef = medicinesCollection.doc(medicineId);
+    var docSnapshot = await docRef.get();
 
-  //   if (docSnapshot.exists) {
-  //     // Copy the document to a "history" subcollection
-  //     var historyCollection = FirebaseFirestore.instance
-  //         .collection('usersInfo')
-  //         .doc(uid)
-  //         .collection('medication_history');
-  //     await historyCollection.doc(medicineId).set(docSnapshot.data()!);
+    if (docSnapshot.exists) {
+      // Copy the document to a "history" subcollection
+      var historyCollection = FirebaseFirestore.instance
+          .collection('usersInfo')
+          .doc(uid)
+          .collection('medication_history');
+      await historyCollection.doc(medicineId).set(docSnapshot.data()!);
 
-  //     // Delete the original document from "medication_to_take"
-  //     await docRef.delete();
-  //   }
-  // }
+      // Delete the original document from "medication_to_take"
+      await docRef.delete();
+    }
+  }
+
+  static Future<List<int>> getUsedContainerNumbers(String uid) async {
+    var medicinesCollection = getMedicinesCollection(uid);
+    var querySnapshot = await medicinesCollection.get();
+
+    return querySnapshot.docs
+        .map((doc) => int.tryParse(doc.data()['container_no'] ?? '') ?? 0)
+        .toList();
+  }
 }

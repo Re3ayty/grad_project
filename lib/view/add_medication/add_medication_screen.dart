@@ -33,7 +33,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
 
   final formKey = GlobalKey<FormState>();
   int doseAmount = 0;
-  int containerNumber = 0;
+  int containerNumber = 1;
   DateTime? startDate;
   DateTime? endDate;
   bool isOngoing = false;
@@ -422,9 +422,11 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                                   if (value != null &&
                                       !usedContainerNumbers.contains(value)) {
                                     setState(() {
-                                      containerNumber = value;                                    });
+                                      containerNumber = value;
+                                    });
                                   } else {
-                                    print("Container number $value is already in use.")
+                                    print(
+                                        "Container number $value is already in use.");
                                   }
                                 },
                               ),

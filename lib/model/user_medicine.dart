@@ -23,11 +23,7 @@ class MedicineUser {
     this.startDate,
     this.endDate,
     this.intakeTimes,
-  }) {
-     if (containerNumber != null && (containerNumber! < 1 || containerNumber! > 4)){
-            throw ArgumentError('Container number must be between 1 and 4.');
-          }
-  }
+  });
 
   MedicineUser.fromFireStore(String docId, Map<String, dynamic>? data)
       : this(
@@ -62,5 +58,29 @@ class MedicineUser {
       'end_date': endDate != null ? dateFormat.format(endDate!) : null,
       'intake_times': intakeTimes,
     };
+  }
+
+  MedicineUser copyWith({
+    String? id,
+    int? containerNumber,
+    String? medName,
+    int? dose,
+    String? frequency,
+    bool? ongoing,
+    DateTime? startDate,
+    DateTime? endDate,
+    List<String>? intakeTimes,
+  }) {
+    return MedicineUser(
+      id: id ?? this.id,
+      containerNumber: containerNumber ?? this.containerNumber,
+      medName: medName ?? this.medName,
+      dose: dose ?? this.dose,
+      frequency: frequency ?? this.frequency,
+      ongoing: ongoing ?? this.ongoing,
+      startDate: startDate ?? this.startDate,
+      endDate: endDate ?? this.endDate,
+      intakeTimes: intakeTimes ?? this.intakeTimes,
+    );
   }
 }

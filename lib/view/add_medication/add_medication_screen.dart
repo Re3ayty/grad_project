@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../utils/responsive_text.dart';
 import '../../viewModel/provider/app_auth_provider.dart';
@@ -13,9 +14,14 @@ import 'package:flutter/services.dart';
 import 'package:cupertino_icons/cupertino_icons.dart';
 import '../../viewModel/medicine_dao.dart';
 import '../../model/user_medicine.dart';
+import '../medicicent_current_history/medication_current_history.dart';
 
 class AddMedicationScreen extends StatefulWidget {
-  const AddMedicationScreen({super.key});
+  final MedicineUser? medicine; //to edit
+  final bool isEditing; //differentiation flag between add and edit
+
+  const AddMedicationScreen({Key? key, this.medicine, this.isEditing = false})
+      : super(key: key);
 
   @override
   State<AddMedicationScreen> createState() => _AddMedicationScreenState();
@@ -70,11 +76,11 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
     }
   }
 
-  void editTime(int index) {
+  void editIntakeTime(int index) {
     selectTime(context, index);
   }
 
-  void deleteTime(int index) {
+  void deleteIntakeTime(int index) {
     setState(() {
       intakeTimes.removeAt(index);
     });
@@ -159,6 +165,23 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
     super.initState();
     loadMedicineData();
     fetchUserContainerNumbers();
+
+    //pre-fill if isEditing is true
+    if (widget.isEditing && widget.medicine != null) {
+      medicineController.text = widget.medicine!.medName ?? '';
+      doseAmount = widget.medicine!.dose ?? 0;
+      containerNumber = widget.medicine!.containerNumber ?? 0;
+      isOngoing = widget.medicine!.ongoing ?? false;
+      frequency = widget.medicine!.frequency ?? 'Daily';
+      startDate = widget.medicine!.startDate;
+      endDate = widget.medicine!.endDate;
+      intakeTimes = widget.medicine!.intakeTimes
+              ?.map((time) => TimeOfDay(
+                  hour: int.parse(time.split(":")[0]),
+                  minute: int.parse(time.split(":")[1])))
+              .toList() ??
+          [];
+    }
   }
 
   void fetchUserContainerNumbers() async {
@@ -186,29 +209,59 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
       );
       return;
     }
-
+    final dateFormat = DateFormat('dd/MM/yyyy');
+    String? formattedStartDate =
+        startDate != null ? dateFormat.format(startDate!) : null;
+    String? formattedEndDate =
+        endDate != null ? dateFormat.format(endDate!) : null;
     List<String> formattedIntakeTimes =
         intakeTimes.map((time) => time.format(context)).toList();
-    newMedicine = MedicineUser(
-      medName: medicineController.text,
-      dose: doseAmount,
-      containerNumber: containerNumber,
-      ongoing: isOngoing,
-      frequency: frequency,
-      startDate: startDate,
-      endDate: isOngoing ? null : endDate,
-      intakeTimes: formattedIntakeTimes,
-    );
-
-    //save to firestore
-    try {
-      await MedicineDao.addMedicineToUser(uid, newMedicine!);
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Medication added successfully")));
-      Navigator.pop(context); // Navigate back to the previous screen
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Falied to add medication: $e")));
+    if (widget.isEditing && widget.medicine != null) {
+      //update firestore
+      try {
+        await MedicineDao.updateMedicineForUser(uid, widget.medicine!.id!, {
+          "med_name": medicineController.text,
+          "dose": doseAmount,
+          "container_no": containerNumber,
+          "ongoing": isOngoing,
+          "frequency": frequency,
+          "start_date": formattedStartDate,
+          "end_date": formattedEndDate,
+          "intake_times": formattedIntakeTimes,
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Medication updated successfully!")));
+        Navigator.pop(context, {
+          "isEditing": true,
+          "updatedMedicine": widget.medicine!.copyWith(
+            medName: medicineController.text,
+            dose: doseAmount,
+            containerNumber: containerNumber,
+            ongoing: isOngoing,
+            frequency: frequency,
+            startDate: formattedStartDate != null
+                ? dateFormat.parse(formattedStartDate)
+                : null,
+            endDate: formattedEndDate != null
+                ? dateFormat.parse(formattedEndDate)
+                : null,
+            intakeTimes: formattedIntakeTimes,
+          ),
+        });
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Failed to update medication: $e")));
+      }
+    } else {
+      //save to firestore
+      try {
+        await MedicineDao.addMedicineToUser(uid, newMedicine!);
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Medication added successfully")));
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Failed to add medication: $e")));
+      }
     }
   }
 
@@ -728,7 +781,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                                   Icons.edit,
                                   color: Color(0xff4979FB),
                                 ),
-                                onPressed: () => editTime(i),
+                                onPressed: () => editIntakeTime(i),
                               ),
                               if (intakeTimes.length > 1)
                                 IconButton(
@@ -737,7 +790,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                                     color: Colors.red,
                                   ),
                                   onPressed: () {
-                                    deleteTime(i);
+                                    deleteIntakeTime(i);
                                   },
                                 ),
                             ],
@@ -801,31 +854,37 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                         isIntakeMissing) {
                       return;
                     }
-                    //initialize authProvider and MedicineUser to save in the filled.dart file
-                    var authProvider =
-                        Provider.of<AppAuthProvider>(context, listen: false);
-                    String? uid = authProvider.firebaseAuthUser?.uid;
-                    List<String> formattedIntakeTimes = intakeTimes
-                        .map((time) => time.format(context))
-                        .toList();
-                    newMedicine = MedicineUser(
-                      medName: medicineController.text,
-                      dose: doseAmount,
-                      containerNumber: containerNumber,
-                      ongoing: isOngoing,
-                      frequency: frequency,
-                      startDate: startDate,
-                      endDate: isOngoing ? null : endDate,
-                      intakeTimes: formattedIntakeTimes,
-                    );
-                    // logOut();
-                    Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => PillAnimationScreen(
-                                  uid: uid!,
-                                  newMedicine: newMedicine!,
-                                )));
+
+                    if (widget.isEditing && widget.medicine != null) {
+                      //update firestore
+                      saveMedication();
+                    } else {
+                      //initialize authProvider and MedicineUser to save in the filled.dart file
+                      var authProvider =
+                          Provider.of<AppAuthProvider>(context, listen: false);
+                      String? uid = authProvider.firebaseAuthUser?.uid;
+                      List<String> formattedIntakeTimes = intakeTimes
+                          .map((time) => time.format(context))
+                          .toList();
+                      newMedicine = MedicineUser(
+                        medName: medicineController.text,
+                        dose: doseAmount,
+                        containerNumber: containerNumber,
+                        ongoing: isOngoing,
+                        frequency: frequency,
+                        startDate: startDate,
+                        endDate: isOngoing ? null : endDate,
+                        intakeTimes: formattedIntakeTimes,
+                      );
+                      // logOut();
+                      Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => PillAnimationScreen(
+                                    uid: uid!,
+                                    newMedicine: newMedicine!,
+                                  )));
+                    }
                     // CategoryPage()
                     // ),
                     // );
@@ -834,7 +893,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                     children: [
                       Expanded(
                         child: Text(
-                          'Set up reminder',
+                          widget.isEditing ? 'Update' : 'Next',
                           style: GoogleFonts.poppins(
                             fontWeight: FontWeight.w500,
                             color: Colors.white,
@@ -843,7 +902,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                               ScaleSize.textScaleFactor(context)),
                         ),
                       ),
-                      Icon(CupertinoIcons.bell, color: Colors.white),
+                      Icon(CupertinoIcons.right_chevron, color: Colors.white),
                     ],
                   ),
                 ),

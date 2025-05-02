@@ -782,20 +782,14 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                     bool isContainerMissing = containerNumber == 0;
                     bool isIntakeMissing = intakeTimes.isEmpty;
                     setState(() {
-                      borderColorDose = isDoseMissing
-                          ? Colors.red.shade800
-                          : Colors.transparent;
-                      borderColorContainer = isContainerMissing
-                          ? Colors.red.shade800
-                          : Colors.transparent;
-                      borderColorIntake = isIntakeMissing
-                          ? Colors.red.shade800
-                          : Colors.transparent;
+                      borderColorDose = isDoseMissing ? Colors.red.shade800 : Colors.transparent;
+                      borderColorContainer = isContainerMissing ? Colors.red.shade800 : Colors.transparent;
+                      borderColorIntake = isIntakeMissing ? Colors.red.shade800 : Colors.transparent;
                     });
-
-                    if (isDoseMissing ||
-                        isContainerMissing ||
-                        isIntakeMissing) {
+                    if (formKey.currentState?.validate() == false) {
+                      return;
+                    }
+                    if (isDoseMissing || isContainerMissing || isIntakeMissing) {
                       return;
                     }
                     //initialize authProvider and MedicineUser to save in the filled.dart file

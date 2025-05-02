@@ -397,10 +397,9 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                               ),
                               DropdownButton<int>(
                                 value: containerNumber,
-                                items: List.generate(5, (index) => index)
-                                    .where((containerNumber) =>
-                                        !usedContainerNumbers
-                                            .contains(containerNumber))
+                                items: [0, 1, 2, 3, 4]
+                                    .where((num) =>
+                                        !usedContainerNumbers.contains(num))
                                     .map((num) => DropdownMenuItem(
                                         value: num,
                                         child: Text(
@@ -408,10 +407,11 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                                           style: GoogleFonts.getFont(
                                             'Poppins',
                                             fontWeight: FontWeight.w400,
-                                            color: usedContainerNumbers
-                                                    .contains(containerNumber)
-                                                ? Colors.grey
-                                                : Colors.black,
+                                            color: Colors.black,
+                                            // color: usedContainerNumbers
+                                            //         .contains(containerNumber)
+                                            //     ? Colors.grey
+                                            //     : Colors.black,
                                             // fontSize: 13,
                                           ),
                                           textScaler: TextScaler.linear(
@@ -420,15 +420,16 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                                         )))
                                     .toList(),
                                 onChanged: (value) async {
-                                  if (value != null &&
-                                      !usedContainerNumbers.contains(value)) {
+                                  if (value != null) {
                                     setState(() {
                                       containerNumber = value;
                                     });
-                                  } else {
-                                    print(
-                                        "Container number $value is already in use.");
+                                    // } else {
+                                    //   print(
+                                    //       "Container number $value is already in use.");
+                                    // }
                                   }
+                                  ;
                                 },
                               ),
                             ],
@@ -782,14 +783,22 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                     bool isContainerMissing = containerNumber == 0;
                     bool isIntakeMissing = intakeTimes.isEmpty;
                     setState(() {
-                      borderColorDose = isDoseMissing ? Colors.red.shade800 : Colors.transparent;
-                      borderColorContainer = isContainerMissing ? Colors.red.shade800 : Colors.transparent;
-                      borderColorIntake = isIntakeMissing ? Colors.red.shade800 : Colors.transparent;
+                      borderColorDose = isDoseMissing
+                          ? Colors.red.shade800
+                          : Colors.transparent;
+                      borderColorContainer = isContainerMissing
+                          ? Colors.red.shade800
+                          : Colors.transparent;
+                      borderColorIntake = isIntakeMissing
+                          ? Colors.red.shade800
+                          : Colors.transparent;
                     });
                     if (formKey.currentState?.validate() == false) {
                       return;
                     }
-                    if (isDoseMissing || isContainerMissing || isIntakeMissing) {
+                    if (isDoseMissing ||
+                        isContainerMissing ||
+                        isIntakeMissing) {
                       return;
                     }
                     //initialize authProvider and MedicineUser to save in the filled.dart file

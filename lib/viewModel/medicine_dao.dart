@@ -70,7 +70,9 @@ class MedicineDao {
     var querySnapshot = await medicinesCollection.get();
 
     return querySnapshot.docs
-        .map((doc) => int.tryParse(doc.data()['container_no'] ?? '') ?? 0)
+        .map((doc) =>
+            int.tryParse(doc.data()['container_no']?.toString() ?? '') ?? 0)
+        .where((num) => num >= 1 && num <= 4)
         .toList();
   }
 }

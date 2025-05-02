@@ -23,7 +23,11 @@ class MedicineUser {
     this.startDate,
     this.endDate,
     this.intakeTimes,
-  });
+  }) {
+     if (containerNumber != null && (containerNumber! < 1 || containerNumber! > 4)){
+            throw ArgumentError('Container number must be between 1 and 4.');
+          }
+  }
 
   MedicineUser.fromFireStore(String docId, Map<String, dynamic>? data)
       : this(

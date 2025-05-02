@@ -33,7 +33,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
 
   final formKey = GlobalKey<FormState>();
   int doseAmount = 0;
-  int containerNumber = 1;
+  int containerNumber = 0;
   DateTime? startDate;
   DateTime? endDate;
   bool isOngoing = false;
@@ -397,11 +397,12 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                               ),
                               DropdownButton<int>(
                                 value: containerNumber,
-                                items: List.generate(6, (index) => index + 1)
+                                items: List.generate(5, (index) => index)
+                                    .where((containerNumber) =>
+                                        !usedContainerNumbers
+                                            .contains(containerNumber))
                                     .map((num) => DropdownMenuItem(
                                         value: num,
-                                        enabled: !usedContainerNumbers
-                                            .contains(containerNumber),
                                         child: Text(
                                           '$num',
                                           style: GoogleFonts.getFont(

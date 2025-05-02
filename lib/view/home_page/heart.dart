@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -16,6 +17,8 @@ class HealthMetricsCard extends StatefulWidget {
   State<HealthMetricsCard> createState() => _HealthMetricsCardState();
 }
 class _HealthMetricsCardState extends State<HealthMetricsCard> {
+  DatabaseReference updatingCommandsHeart = FirebaseDatabase.instance.ref("commands");
+
   @override
   Widget build(BuildContext context) {
     int avgBPM = widget.healthMatrixData['avgBPM'];
@@ -279,7 +282,10 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
                 height: w*0.05,
                 child: ElevatedButton(
                   style: ButtonStyle(backgroundColor: MaterialStatePropertyAll(Color(0xffE5E4E3))),
-                  onPressed: () {
+                  onPressed: () async {
+                    await updatingCommandsHeart.update({
+                      "healthMonitor": 'START',
+                    });
                     showMeasurementDialog(context);
                     },
                   child: Text("Measure" ,style:GoogleFonts.getFont('Poppins',fontWeight: FontWeight.w500,

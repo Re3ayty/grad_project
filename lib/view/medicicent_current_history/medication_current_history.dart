@@ -40,12 +40,29 @@ class _MedicineScreenState extends State<MedicineScreen> {
     }
   }
 
-  void deleteMedicine(int index) {
-    setState(() {
-      historyMedicines.add(currentMedicines[index]);
-      currentMedicines.removeAt(index);
-      filteredMedicines = List.from(currentMedicines);
-    });
+  void deleteMedicine(int index) async {
+    var authProvider = Provider.of<AppAuthProvider>(context, listen: false);
+    String? uid = authProvider.firebaseAuthUser?.uid;
+    String medicineId = currentMedicines[index].id!;
+    try {
+      await MedicineDao.moveMedicineToHistory(uid!, medicineId);
+      setState(() {
+        historyMedicines.add(currentMedicines[index]);
+        currentMedicines.removeAt(index);
+        filteredMedicines = List.from(currentMedicines);
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Medicine moved to history"),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Failed to move medicine to history: $e"),
+        ),
+      );
+    }
   }
 
   // void editMedicine(int index) {
@@ -252,9 +269,10 @@ class _MedicineScreenState extends State<MedicineScreen> {
                           itemBuilder: (context, index) {
                             return MedicineCard(
                               name:
-                                  filteredMedicines[index].medName ?? "Unknown",
+                                  historyMedicines[index].medName ?? "Unknown",
                               schedule:
-                                  filteredMedicines[index].intakeTimes ?? [],
+                                  historyMedicines[index].intakeTimes ?? [],
+                              isHistory: true,
                               onDelete: () {},
                               onEdit: () {},
                             );
@@ -300,14 +318,17 @@ class _MedicineScreenState extends State<MedicineScreen> {
 class MedicineCard extends StatelessWidget {
   final String name;
   final List<String> schedule;
-  final VoidCallback onDelete;
-  final VoidCallback onEdit;
+  final VoidCallback? onDelete;
+  final VoidCallback? onEdit;
+  final bool
+      isHistory; //to indicate that a card is in history to remove edit and delete buttons
 
   MedicineCard(
       {required this.name,
       required this.schedule,
-      required this.onDelete,
-      required this.onEdit});
+      this.onDelete,
+      this.onEdit,
+      this.isHistory = false});
 
   @override
   Widget build(BuildContext context) {
@@ -330,23 +351,26 @@ class MedicineCard extends StatelessWidget {
             // fontSize: 14,
           ),
         ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            GestureDetector(
-              onTap: onEdit,
-              // onTap: () =>
-              //     Navigator.pushNamed(context, AppRoutes.addMedicationRoute),
+        trailing: isHistory
+            ? null
+            : // Show edit and delete buttons only if not in history
+            Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  GestureDetector(
+                    onTap: onEdit,
+                    // onTap: () =>
+                    //     Navigator.pushNamed(context, AppRoutes.addMedicationRoute),
 
-              child: Icon(Icons.edit, color: Color(0xff4979FB)),
-            ),
-            SizedBox(width: 10),
-            GestureDetector(
-              onTap: onDelete,
-              child: Icon(Icons.delete_forever, color: Colors.red),
-            ),
-          ],
-        ),
+                    child: Icon(Icons.edit, color: Color(0xff4979FB)),
+                  ),
+                  SizedBox(width: 10),
+                  GestureDetector(
+                    onTap: onDelete,
+                    child: Icon(Icons.delete_forever, color: Colors.red),
+                  ),
+                ],
+              ),
       ),
     );
   }

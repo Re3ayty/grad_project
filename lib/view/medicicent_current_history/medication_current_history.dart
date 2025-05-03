@@ -11,6 +11,9 @@ import '../../model/user_medicine.dart';
 import '../../utils/responsive_text.dart';
 
 class MedicineScreen extends StatefulWidget {
+  final MedicineUser? newMedicine;
+
+  const MedicineScreen({Key? key, this.newMedicine}) : super(key: key);
   @override
   _MedicineScreenState createState() => _MedicineScreenState();
 }
@@ -33,9 +36,11 @@ class _MedicineScreenState extends State<MedicineScreen> {
 
     if (uid != null) {
       List<MedicineUser> medicines = await MedicineDao.getMedicinesForUser(uid);
+      print("Fetched medicines: $medicines"); //debug
       setState(() {
         currentMedicines = medicines;
         filteredMedicines = List.from(currentMedicines);
+        print("filtered medicines: $filteredMedicines"); //debug
       });
     }
   }
@@ -234,6 +239,7 @@ class _MedicineScreenState extends State<MedicineScreen> {
                         ListView.builder(
                           itemCount: filteredMedicines.length,
                           itemBuilder: (context, index) {
+                            print("building card for index: $index"); //debug
                             return MedicineCard(
                               name:
                                   filteredMedicines[index].medName ?? "Unknown",

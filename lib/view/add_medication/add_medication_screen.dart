@@ -209,11 +209,11 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
       );
       return;
     }
-    final dateFormat = DateFormat('dd/MM/yyyy');
-    String? formattedStartDate =
-        startDate != null ? dateFormat.format(startDate!) : null;
-    String? formattedEndDate =
-        endDate != null ? dateFormat.format(endDate!) : null;
+    // final dateFormat = DateFormat('dd/MM/yyyy');
+    // String? formattedStartDate =
+    //     startDate != null ? dateFormat.format(startDate!) : null;
+    // String? formattedEndDate =
+    //     endDate != null ? dateFormat.format(endDate!) : null;
     List<String> formattedIntakeTimes =
         intakeTimes.map((time) => time.format(context)).toList();
     if (widget.isEditing && widget.medicine != null) {
@@ -225,8 +225,8 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
           "container_no": containerNumber,
           "ongoing": isOngoing,
           "frequency": frequency,
-          "start_date": formattedStartDate,
-          "end_date": formattedEndDate,
+          "start_date": startDate,
+          "end_date": endDate,
           "intake_times": formattedIntakeTimes,
         });
         ScaffoldMessenger.of(context).showSnackBar(

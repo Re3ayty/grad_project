@@ -239,12 +239,8 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
             containerNumber: containerNumber,
             ongoing: isOngoing,
             frequency: frequency,
-            startDate: formattedStartDate != null
-                ? dateFormat.parse(formattedStartDate)
-                : null,
-            endDate: formattedEndDate != null
-                ? dateFormat.parse(formattedEndDate)
-                : null,
+            startDate: startDate,
+            endDate: endDate,
             intakeTimes: formattedIntakeTimes,
           ),
         });

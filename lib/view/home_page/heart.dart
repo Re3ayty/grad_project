@@ -33,6 +33,11 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
     String bpmState='normal';
     final double oxygenPercent = 98;
     final clampedPercent = oxygenPercent.clamp(0.0, 100.0);
+    bool isLiveBPMworking= liveBPM!=0;
+    bool isLiveSpO2working= liveBPM!=0;
+    bool bothLiveWorking= isLiveBPMworking|| isLiveSpO2working;
+    String measureButton='';
+
 
     // void showMeasurementDialog(BuildContext context) {
     //   showDialog(
@@ -101,7 +106,7 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
     //       );
     //     },
     //   );
-    // }
+    // }z
     void showMeasurementDialog(BuildContext context) {
       late Timer timer;
       bool dialogClosed = false;
@@ -176,6 +181,24 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
           );
         },
       );
+    }
+    if(bothLiveWorking)
+    {
+      setState(() {
+        measureButton='Stop';
+      });
+    }
+    else if(!bothLiveWorking)
+    {
+      setState(() {
+        measureButton='Measure';
+      });
+    }
+    else if(!fingerPlaced)
+    {
+      setState(() {
+        measureButton='Please place your finger';
+      });
     }
 
 
@@ -262,7 +285,6 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
                 ),
               ],
             ),
-
             Padding(
               padding:  EdgeInsets.only(top: w*0.05,bottom: w*0.05),
               child: Center(
@@ -283,12 +305,22 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
                 child: ElevatedButton(
                   style: ButtonStyle(backgroundColor: MaterialStatePropertyAll(Color(0xffE5E4E3))),
                   onPressed: () async {
+                    if(!bothLiveWorking){
                     await updatingCommandsHeart.update({
                       "healthMonitor": 'START',
                     });
                     showMeasurementDialog(context);
-                    },
-                  child: Text("Measure" ,style:GoogleFonts.getFont('Poppins',fontWeight: FontWeight.w500,
+                    }
+                    else
+                    {
+                      await updatingCommandsHeart.update({
+                        "healthMonitor": 'STOP',
+                      });
+                    }},
+                  child: Text(
+                    measureButton
+                    // bothLiveWorking?'STOP': "Measure"
+                    ,style:GoogleFonts.getFont('Poppins',fontWeight: FontWeight.w500,
                     color: Colors.black,
                   ),
                 ),

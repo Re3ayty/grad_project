@@ -102,7 +102,7 @@ class _SettingsScreenPageState extends State<SettingsScreenPage> {
                   SizedBox(height: 20),
                   CircleAvatar(
                     radius: 60,
-                    backgroundImage: AssetImage("images/splash doctor img.jpg"),
+                    backgroundImage: AssetImage("assets/Images/app_logo_icon.png"),
                   ),
                   SizedBox(
                     height: 10,

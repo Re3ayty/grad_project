@@ -1,3 +1,4 @@
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:hcs_grad_project/utils/app_routes_new.dart';
 import 'package:hcs_grad_project/view/Auth/login.dart';
@@ -22,6 +23,13 @@ void main() async
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  // await AwesomeNotifications().initialize('assets/Images/blue_outline_logo_without_name.png',
+  //     [
+  //       NotificationChannel(
+  //         channelGroupKey: 'Basic_notification_group',
+  //           channelKey: 'Basic_notification', channelName: 'High Temperature', channelDescription: 'if temp got higher')
+  //     ]
+  // );
   runApp(ChangeNotifierProvider<AppAuthProvider>(
       create: (context) => AppAuthProvider(), child: const MyApp()));
 }

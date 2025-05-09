@@ -82,6 +82,7 @@ class _MedicineScreenState extends State<MedicineScreen>
         historyMedicines.add(currentMedicines[index]);
         currentMedicines.removeAt(index);
         filteredMedicines = List.from(currentMedicines);
+        filteredHistoryMedicines = List.from(historyMedicines);
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

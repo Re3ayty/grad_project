@@ -30,6 +30,12 @@ class _MedicineScreenState extends State<MedicineScreen> {
     fetchCurrentMedicines();
   }
 
+  @override
+  void dipose() {
+    print("MedicineScreen disposed"); //debug
+    super.dispose();
+  }
+
   void fetchCurrentMedicines() async {
     var authProvider = Provider.of<AppAuthProvider>(context, listen: false);
     String? uid = authProvider.firebaseAuthUser?.uid;
@@ -37,6 +43,7 @@ class _MedicineScreenState extends State<MedicineScreen> {
     if (uid != null) {
       List<MedicineUser> medicines = await MedicineDao.getMedicinesForUser(uid);
       print("Fetched medicines: $medicines"); //debug
+      if (!mounted) return; // Check if the widget is still mounted
       setState(() {
         currentMedicines = medicines;
         filteredMedicines = List.from(currentMedicines);
@@ -51,6 +58,7 @@ class _MedicineScreenState extends State<MedicineScreen> {
     String medicineId = currentMedicines[index].id!;
     try {
       await MedicineDao.moveMedicineToHistory(uid!, medicineId);
+      if (!mounted) return; // Check if the widget is still mounted
       setState(() {
         historyMedicines.add(currentMedicines[index]);
         currentMedicines.removeAt(index);
@@ -62,6 +70,7 @@ class _MedicineScreenState extends State<MedicineScreen> {
         ),
       );
     } catch (e) {
+      if (!mounted) return; // Check if the widget is still mounted
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Failed to move medicine to history: $e"),

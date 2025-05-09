@@ -36,10 +36,10 @@ class MedicineUser {
           dose: data?['dose'],
           ongoing: data?['ongoing'],
           startDate: data?['start_date'] != null
-              ? DateTime.parse(data!['start_date'])
+              ? DateFormat('dd/MM/yyyy').parse(data!['start_date'])
               : null,
           endDate: data?['end_date'] != null
-              ? DateTime.parse(data!['end_date'])
+              ? DateFormat('dd/MM/yyyy').parse(data!['end_date'])
               : null,
           intakeTimes: data?['intake_times'] != null
               ? List<String>.from(data!['intake_times'])

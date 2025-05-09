@@ -283,58 +283,97 @@ class _MedicineScreenState extends State<MedicineScreen>
                   Expanded(
                     child: TabBarView(
                       children: [
-                        ListView.builder(
-                          itemCount: filteredMedicines.length,
-                          itemBuilder: (context, index) {
-                            // print("building card for index: $index"); //debug
-                            return MedicineCard(
-                              name:
-                                  filteredMedicines[index].medName ?? "Unknown",
-                              frequency: filteredMedicines[index].frequency ??
-                                  "Unknown",
-                              schedule:
-                                  filteredMedicines[index].intakeTimes ?? [],
-                              onDelete: () => deleteMedicine(index),
-                              onEdit: () async {
-                                final result = await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => AddMedicationScreen(
-                                      isEditing: true,
-                                      medicine: currentMedicines[index],
-                                    ),
-                                  ),
-                                );
-                                if (result != null) {
-                                  if (result["isEditing"] == true) {
-                                    setState(() {
-                                      currentMedicines[index] =
-                                          result["updatedMedicine"];
-                                      filteredMedicines =
-                                          List.from(currentMedicines);
+                        StreamBuilder<List<MedicineUser>>(
+                          stream: MedicineDao.getCurrentMedicinesStream(
+                              Provider.of<AppAuthProvider>(context,
+                                      listen: false)
+                                  .firebaseAuthUser!
+                                  .uid),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return Center(child: CircularProgressIndicator());
+                            } else if (snapshot.hasError) {
+                              return Center(
+                                  child: Text("Error: ${snapshot.error}"));
+                            } else if (!snapshot.hasData ||
+                                snapshot.data!.isEmpty) {
+                              return Center(child: Text("No medicines found."));
+                            }
+                            if (snapshot.hasData) {
+                              currentMedicines = snapshot.data!;
+                              filteredMedicines =
+                                  List.from(currentMedicines);
+                            }
+                            return ListView.builder(
+                              itemCount: filteredMedicines.length,
+                              itemBuilder: (context, index) {
+                                return MedicineCard(
+                                    name: filteredMedicines[index].medName ?? "Unknown",
+                                    frequency:
+                                        filteredMedicines[index].frequency ?? "Unknown",
+                                    schedule: filteredMedicines[index].intakeTimes ?? [],
+                                    onDelete: () => deleteMedicine(index),
+                                    onEdit: () async {
+                                      final result = await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                AddMedicationScreen(
+                                                  isEditing: true,
+                                                  medicine: currentMedicines[index],
+                                                )),
+                                      );
+                                      if (result != null) {
+                                        setState(() {
+                                          currentMedicines[index] = result;
+                                          filteredMedicines =
+                                              List.from(currentMedicines);
+                                        });
+                                      }
                                     });
-                                  }
-                                }
                               },
                             );
                           },
                         ),
-                        ListView.builder(
-                          itemCount: historyMedicines.length,
-                          itemBuilder: (context, index) {
-                            return MedicineCard(
-                              name: filteredHistoryMedicines[index].medName ??
-                                  "Unknown",
-                              frequency:
-                                  filteredHistoryMedicines[index].frequency ??
-                                      "Unknown",
-                              schedule:
-                                  filteredHistoryMedicines[index].intakeTimes ??
-                                      [],
-                              isHistory: true,
+                        StreamBuilder<List<MedicineUser>>(
+                          stream: MedicineDao.getHistoryMedicinesStream(
+                              Provider.of<AppAuthProvider>(context,
+                                      listen: false)
+                                  .firebaseAuthUser!
+                                  .uid),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return Center(child: CircularProgressIndicator());
+                            } else if (snapshot.hasError) {
+                              return Center(
+                                  child: Text("Error: ${snapshot.error}"));
+                            } else if (!snapshot.hasData ||
+                                snapshot.data!.isEmpty) {
+                              return Center(child: Text("No medicines found."));
+                            }
+
+                            if (snapshot.hasData) {
+                              historyMedicines = snapshot.data!;
+                              filteredHistoryMedicines =
+                                  List.from(historyMedicines);
+                            }
+
+                            return ListView.builder(
+                              itemCount: filteredHistoryMedicines.length,
+                              itemBuilder: (context, index) {
+                                return MedicineCard(
+                                  name: filteredHistoryMedicines[index].medName ?? "Unknown",
+                                  frequency:
+                                      filteredHistoryMedicines[index].frequency ?? "Unknown",
+                                  schedule: filteredHistoryMedicines[index].intakeTimes ?? [],
+                                  isHistory: true,
+                                );
+                              },
                             );
                           },
-                        ),
+                        )
                       ],
                     ),
                   ),

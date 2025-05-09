@@ -87,4 +87,26 @@ class MedicineDao {
         .where((num) => num >= 1 && num <= 4)
         .toList();
   }
+
+  static Stream<List<MedicineUser>> getCurrentMedicinesStream(String uid) {
+    return FirebaseFirestore.instance
+        .collection('usersInfo')
+        .doc(uid)
+        .collection('medication_to_take')
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => MedicineUser.fromFireStore(doc.id, doc.data()))
+            .toList());
+  }
+
+  static Stream<List<MedicineUser>> getHistoryMedicinesStream(String uid) {
+    return FirebaseFirestore.instance
+        .collection('usersInfo')
+        .doc(uid)
+        .collection('medication_history')
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => MedicineUser.fromFireStore(doc.id, doc.data()))
+            .toList());
+  }
 }

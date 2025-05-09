@@ -32,6 +32,18 @@ class MedicineDao {
         .toList();
   }
 
+  static Future<List<MedicineUser>> getHistoryMedicinesForUser(
+      String uid) async {
+    var historyCollection = FirebaseFirestore.instance
+        .collection('usersInfo')
+        .doc(uid)
+        .collection('medication_history');
+    var snapshot = await historyCollection.get();
+    return snapshot.docs
+        .map((doc) => MedicineUser.fromFireStore(doc.id, doc.data()))
+        .toList();
+  }
+
   static Future<void> updateMedicineForUser(
       String uid, String medicineId, Map<String, dynamic> updatedData) async {
     var medicinesCollection = getMedicinesCollection(uid);

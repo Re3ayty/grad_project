@@ -176,9 +176,18 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
       startDate = widget.medicine!.startDate;
       endDate = widget.medicine!.endDate;
       intakeTimes = widget.medicine!.intakeTimes
-              ?.map((time) => TimeOfDay(
-                  hour: int.parse(time.split(":")[0]),
-                  minute: int.parse(time.split(":")[1])))
+              ?.map((time) {
+                try {
+                  // Parse the time string with AM/PM using DateFormat
+                  final dateTime = DateFormat.jm().parse(time);
+                  return TimeOfDay.fromDateTime(dateTime);
+                } catch (e) {
+                  print("Invalid time format: $time");
+                  return null; // Skip invalid times
+                }
+              })
+              .where((time) => time != null) // Remove null values
+              .cast<TimeOfDay>()
               .toList() ??
           [];
     }

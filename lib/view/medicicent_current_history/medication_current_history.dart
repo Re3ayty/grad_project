@@ -18,21 +18,26 @@ class MedicineScreen extends StatefulWidget {
   _MedicineScreenState createState() => _MedicineScreenState();
 }
 
-class _MedicineScreenState extends State<MedicineScreen> {
+class _MedicineScreenState extends State<MedicineScreen>
+    with SingleTickerProviderStateMixin {
   int selectedIndex = 1;
   List<MedicineUser> currentMedicines = [];
   List<MedicineUser> historyMedicines = [];
   List<MedicineUser> filteredMedicines = [];
+  List<MedicineUser> filteredHistoryMedicines = [];
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
     fetchCurrentMedicines();
+    fetchHistoryMedicines();
   }
 
   @override
   void dipose() {
-    print("MedicineScreen disposed"); //debug
+    _tabController.dispose();
     super.dispose();
   }
 
@@ -42,12 +47,26 @@ class _MedicineScreenState extends State<MedicineScreen> {
 
     if (uid != null) {
       List<MedicineUser> medicines = await MedicineDao.getMedicinesForUser(uid);
-      print("Fetched medicines: $medicines"); //debug
+      // print("Fetched medicines: $medicines"); //debug
       if (!mounted) return; // Check if the widget is still mounted
       setState(() {
         currentMedicines = medicines;
         filteredMedicines = List.from(currentMedicines);
-        print("filtered medicines: $filteredMedicines"); //debug
+        // print("filtered medicines: $filteredMedicines"); //debug
+      });
+    }
+  }
+
+  void fetchHistoryMedicines() async {
+    var authProvider = Provider.of<AppAuthProvider>(context, listen: false);
+    String? uid = authProvider.firebaseAuthUser?.uid;
+    if (uid != null) {
+      List<MedicineUser> medicines =
+          await MedicineDao.getHistoryMedicinesForUser(uid);
+      if (!mounted) return; // Check if the widget is still mounted
+      setState(() {
+        historyMedicines = medicines;
+        filteredHistoryMedicines = List.from(historyMedicines);
       });
     }
   }
@@ -137,6 +156,15 @@ class _MedicineScreenState extends State<MedicineScreen> {
     });
   }
 
+  void filterHistoryMedicines(String query) {
+    setState(() {
+      filteredHistoryMedicines = historyMedicines
+          .where((medicine) =>
+              medicine.medName!.toLowerCase().contains(query.toLowerCase()))
+          .toList();
+    });
+  }
+
   // void addMedicine() {
   //   TextEditingController nameController = TextEditingController();
   //   TextEditingController scheduleController = TextEditingController();
@@ -207,7 +235,15 @@ class _MedicineScreenState extends State<MedicineScreen> {
             padding: EdgeInsets.all(16),
             child: TextField(
               cursorColor: Color(0xff4979FB),
-              onChanged: filterMedicines,
+              onChanged: (query) {
+                if (_tabController.index == 0) {
+                  //to search in current medicines
+                  filterMedicines(query);
+                } else {
+                  //to search in history medicines
+                  filterHistoryMedicines(query);
+                }
+              },
               decoration: InputDecoration(
                 focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: Color(0xff4979FB)),
@@ -234,6 +270,7 @@ class _MedicineScreenState extends State<MedicineScreen> {
               child: Column(
                 children: [
                   TabBar(
+                    controller: _tabController,
                     indicatorColor: Color(0xff4979FB),
                     labelColor: Colors.black,
                     unselectedLabelColor: Colors.grey,
@@ -248,10 +285,12 @@ class _MedicineScreenState extends State<MedicineScreen> {
                         ListView.builder(
                           itemCount: filteredMedicines.length,
                           itemBuilder: (context, index) {
-                            print("building card for index: $index"); //debug
+                            // print("building card for index: $index"); //debug
                             return MedicineCard(
                               name:
                                   filteredMedicines[index].medName ?? "Unknown",
+                              frequency: filteredMedicines[index].frequency ??
+                                  "Unknown",
                               schedule:
                                   filteredMedicines[index].intakeTimes ?? [],
                               onDelete: () => deleteMedicine(index),
@@ -283,13 +322,15 @@ class _MedicineScreenState extends State<MedicineScreen> {
                           itemCount: historyMedicines.length,
                           itemBuilder: (context, index) {
                             return MedicineCard(
-                              name:
-                                  historyMedicines[index].medName ?? "Unknown",
+                              name: filteredHistoryMedicines[index].medName ??
+                                  "Unknown",
+                              frequency:
+                                  filteredHistoryMedicines[index].frequency ??
+                                      "Unknown",
                               schedule:
-                                  historyMedicines[index].intakeTimes ?? [],
+                                  filteredHistoryMedicines[index].intakeTimes ??
+                                      [],
                               isHistory: true,
-                              onDelete: () {},
-                              onEdit: () {},
                             );
                           },
                         ),
@@ -332,6 +373,7 @@ class _MedicineScreenState extends State<MedicineScreen> {
 
 class MedicineCard extends StatelessWidget {
   final String name;
+  final String frequency;
   final List<String> schedule;
   final VoidCallback? onDelete;
   final VoidCallback? onEdit;
@@ -340,6 +382,7 @@ class MedicineCard extends StatelessWidget {
 
   MedicineCard(
       {required this.name,
+      required this.frequency,
       required this.schedule,
       this.onDelete,
       this.onEdit,
@@ -359,7 +402,9 @@ class MedicineCard extends StatelessWidget {
           ),
         ),
         subtitle: Text(
-          schedule.isNotEmpty ? schedule.join(", ") : "No schedule available",
+          schedule.isNotEmpty
+              ? "$frequency / ${schedule.join(", ")}"
+              : "No schedule avaliable",
           textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
           style: GoogleFonts.getFont(
             'Poppins', fontWeight: FontWeight.w500,

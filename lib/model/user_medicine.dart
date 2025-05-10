@@ -1,6 +1,6 @@
-import 'dart:typed_data';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+
 
 class MedicineUser {
   String? id;
@@ -30,7 +30,7 @@ class MedicineUser {
           id: docId, //assigned by firestore (document ID)
           containerNumber: data?['container_no'] != null
               ? int.tryParse(data!['container_no'].toString())
-              : null, //tp avoid type mismatch
+              : null, //to avoid type mismatch
           medName: data?['med_name'],
           frequency: data?['frequency'],
           dose: data?['dose'],
@@ -42,8 +42,16 @@ class MedicineUser {
               ? DateFormat('dd/MM/yyyy').parse(data!['end_date'])
               : null,
           intakeTimes: data?['intake_times'] != null
-              ? List<String>.from(data!['intake_times'])
-              : [],
+            ? (data?['intake_times'] as List).map((time) {
+                if (time is Timestamp) {
+                  return DateFormat('HH:mm').format(time.toDate());
+                } else if (time is String) {
+                  return time; // Assume it's already in 24-hour format
+                } else {
+                  return time.toString();
+                }
+              }).toList()
+            : [],
         );
 
   Map<String, dynamic> toFireStore() {

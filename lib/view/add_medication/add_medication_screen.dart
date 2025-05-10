@@ -179,7 +179,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
               ?.map((time) {
                 try {
                   // Parse the time string with AM/PM using DateFormat
-                  final dateTime = DateFormat.jm().parse(time);
+                  final dateTime = DateFormat('HH:mm').parse(time);
                   return TimeOfDay.fromDateTime(dateTime);
                 } catch (e) {
                   print("Invalid time format: $time");
@@ -205,6 +205,13 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
     }
   }
 
+  String formatTimeOfDay24Hour(TimeOfDay time) {
+    final now = DateTime.now();
+    final dateTime =
+        DateTime(now.year, now.month, now.day, time.hour, time.minute);
+    return DateFormat('HH:mm').format(dateTime);
+  }
+
   Future<void> saveMedication() async {
     if (formKey.currentState!.validate() == false) {
       return;
@@ -224,7 +231,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
     // String? formattedEndDate =
     //     endDate != null ? dateFormat.format(endDate!) : null;
     List<String> formattedIntakeTimes =
-        intakeTimes.map((time) => time.format(context)).toList();
+        intakeTimes.map((time) => formatTimeOfDay24Hour(time)).toList();
     if (widget.isEditing && widget.medicine != null) {
       //update firestore
       try {
@@ -453,7 +460,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                                 textScaler: TextScaler.linear(
                                     ScaleSize.textScaleFactor(context)),
                               ),
-                              widget.isEditing  // when in editing mode, display containerNumber as text
+                              widget.isEditing // when in editing mode, display containerNumber as text
                                   ? Text(
                                       '$containerNumber',
                                       style: GoogleFonts.getFont("Poppins",
@@ -784,7 +791,9 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                       ),
                       for (int i = 0; i < intakeTimes.length; i++)
                         ListTile(
-                          title: Text(intakeTimes[i].format(context)),
+                          title: Text(
+                            formatTimeOfDay24Hour(intakeTimes[i]),
+                          ),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -876,7 +885,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                           Provider.of<AppAuthProvider>(context, listen: false);
                       String? uid = authProvider.firebaseAuthUser?.uid;
                       List<String> formattedIntakeTimes = intakeTimes
-                          .map((time) => time.format(context))
+                          .map((time) => formatTimeOfDay24Hour(time))
                           .toList();
                       newMedicine = MedicineUser(
                         medName: medicineController.text,

@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
-
 class MedicineUser {
   String? id;
   int? containerNumber;
@@ -35,23 +34,27 @@ class MedicineUser {
           frequency: data?['frequency'],
           dose: data?['dose'],
           ongoing: data?['ongoing'],
-          startDate: data?['start_date'] != null
-              ? DateFormat('dd/MM/yyyy').parse(data!['start_date'])
-              : null,
-          endDate: data?['end_date'] != null
-              ? DateFormat('dd/MM/yyyy').parse(data!['end_date'])
-              : null,
+          startDate: data?['start_date'] is Timestamp
+              ? (data?['start_date'] as Timestamp).toDate()
+              : data?['start_date'] != null
+                  ? DateFormat('dd/MM/yyyy').parse(data!['start_date'])
+                  : null,
+          endDate: data?['end_date'] is Timestamp
+              ? (data?['end_date'] as Timestamp).toDate()
+              : data?['end_date'] != null
+                  ? DateFormat('dd/MM/yyyy').parse(data!['end_date'])
+                  : null,
           intakeTimes: data?['intake_times'] != null
-            ? (data?['intake_times'] as List).map((time) {
-                if (time is Timestamp) {
-                  return DateFormat('HH:mm').format(time.toDate());
-                } else if (time is String) {
-                  return time; // Assume it's already in 24-hour format
-                } else {
-                  return time.toString();
-                }
-              }).toList()
-            : [],
+              ? (data?['intake_times'] as List).map((time) {
+                  if (time is Timestamp) {
+                    return DateFormat('HH:mm').format(time.toDate());
+                  } else if (time is String) {
+                    return time; // Assume it's already in 24-hour format
+                  } else {
+                    return time.toString();
+                  }
+                }).toList()
+              : [],
         );
 
   Map<String, dynamic> toFireStore() {

@@ -453,43 +453,50 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                                 textScaler: TextScaler.linear(
                                     ScaleSize.textScaleFactor(context)),
                               ),
-                              DropdownButton<int>(
-                                value: containerNumber,
-                                items: [0, 1, 2, 3, 4]
-                                    .where((num) =>
-                                        !usedContainerNumbers.contains(num))
-                                    .map((num) => DropdownMenuItem(
-                                        value: num,
-                                        child: Text(
-                                          '$num',
-                                          style: GoogleFonts.getFont(
-                                            'Poppins',
-                                            fontWeight: FontWeight.w400,
-                                            color: Colors.black,
-                                            // color: usedContainerNumbers
-                                            //         .contains(containerNumber)
-                                            //     ? Colors.grey
-                                            //     : Colors.black,
-                                            // fontSize: 13,
-                                          ),
-                                          textScaler: TextScaler.linear(
-                                              ScaleSize.textScaleFactor(
-                                                  context)),
-                                        )))
-                                    .toList(),
-                                onChanged: (value) async {
-                                  if (value != null) {
-                                    setState(() {
-                                      containerNumber = value;
-                                    });
-                                    // } else {
-                                    //   print(
-                                    //       "Container number $value is already in use.");
-                                    // }
-                                  }
-                                  ;
-                                },
-                              ),
+                              widget.isEditing  // when in editing mode, display containerNumber as text
+                                  ? Text(
+                                      '$containerNumber',
+                                      style: GoogleFonts.getFont("Poppins",
+                                          fontWeight: FontWeight.w400,
+                                          color: Colors.black),
+                                    )
+                                  : DropdownButton<int>(
+                                      value: containerNumber,
+                                      items: [0, 1, 2, 3, 4]
+                                          .where((num) => !usedContainerNumbers
+                                              .contains(num))
+                                          .map((num) => DropdownMenuItem(
+                                              value: num,
+                                              child: Text(
+                                                '$num',
+                                                style: GoogleFonts.getFont(
+                                                  'Poppins',
+                                                  fontWeight: FontWeight.w400,
+                                                  color: Colors.black,
+                                                  // color: usedContainerNumbers
+                                                  //         .contains(containerNumber)
+                                                  //     ? Colors.grey
+                                                  //     : Colors.black,
+                                                  // fontSize: 13,
+                                                ),
+                                                textScaler: TextScaler.linear(
+                                                    ScaleSize.textScaleFactor(
+                                                        context)),
+                                              )))
+                                          .toList(),
+                                      onChanged: (value) async {
+                                        if (value != null) {
+                                          setState(() {
+                                            containerNumber = value;
+                                          });
+                                          // } else {
+                                          //   print(
+                                          //       "Container number $value is already in use.");
+                                          // }
+                                        }
+                                        ;
+                                      },
+                                    ),
                             ],
                           ),
                         ),

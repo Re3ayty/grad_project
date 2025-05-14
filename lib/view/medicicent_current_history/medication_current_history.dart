@@ -31,8 +31,22 @@ class _MedicineScreenState extends State<MedicineScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+
+    _tabController.addListener(() {
+      if (_tabController.index == 0) {
+        setState(() {
+          filteredMedicines = List.from(currentMedicines);
+        });
+      } else if (_tabController.index == 1) {
+        setState(() {
+          filteredHistoryMedicines = List.from(historyMedicines);
+        });
+      }
+    });
     fetchCurrentMedicines();
     fetchHistoryMedicines();
+    // filterHistoryMedicines();
+    // filterMedicines();
   }
 
   @override
@@ -47,12 +61,10 @@ class _MedicineScreenState extends State<MedicineScreen>
 
     if (uid != null) {
       List<MedicineUser> medicines = await MedicineDao.getMedicinesForUser(uid);
-      // print("Fetched medicines: $medicines"); //debug
       if (!mounted) return; // Check if the widget is still mounted
       setState(() {
         currentMedicines = medicines;
         filteredMedicines = List.from(currentMedicines);
-        // print("filtered medicines: $filteredMedicines"); //debug
       });
     }
   }
@@ -74,14 +86,24 @@ class _MedicineScreenState extends State<MedicineScreen>
   void deleteMedicine(int index) async {
     var authProvider = Provider.of<AppAuthProvider>(context, listen: false);
     String? uid = authProvider.firebaseAuthUser?.uid;
-    String medicineId = currentMedicines[index].id!;
+
+    if (uid == null || index < 0 || index >= currentMedicines.length) {
+      // Ensure the index is valid and the user is authenticated
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Invalid operation")),
+      );
+      return;
+    }
+    MedicineUser medicineToDelete = currentMedicines[index];
+    String medicineId = medicineToDelete.id!;
+
     try {
       await MedicineDao.moveMedicineToHistory(uid!, medicineId);
       if (!mounted) return; // Check if the widget is still mounted
       setState(() {
-        historyMedicines.add(currentMedicines[index]);
-        currentMedicines.removeAt(index);
+        currentMedicines.remove(medicineToDelete);
         filteredMedicines = List.from(currentMedicines);
+        historyMedicines.add(medicineToDelete);
         filteredHistoryMedicines = List.from(historyMedicines);
       });
       ScaffoldMessenger.of(context).showSnackBar(
@@ -218,6 +240,7 @@ class _MedicineScreenState extends State<MedicineScreen>
     dynamic w = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text(
           "Medicines",
           style: GoogleFonts.getFont(
@@ -282,6 +305,7 @@ class _MedicineScreenState extends State<MedicineScreen>
                   ),
                   Expanded(
                     child: TabBarView(
+                      controller: _tabController,
                       children: [
                         StreamBuilder<List<MedicineUser>>(
                           stream: MedicineDao.getCurrentMedicinesStream(
@@ -301,18 +325,25 @@ class _MedicineScreenState extends State<MedicineScreen>
                               return Center(child: Text("No medicines found."));
                             }
                             if (snapshot.hasData) {
-                              currentMedicines = snapshot.data!;
-                              filteredMedicines =
-                                  List.from(currentMedicines);
+                              if(currentMedicines != snapshot.data!) {
+                                currentMedicines = snapshot.data!;
+                              }
+                              if (filteredMedicines.isEmpty) {
+                                filteredMedicines = List.from(currentMedicines);
+                              }
                             }
                             return ListView.builder(
                               itemCount: filteredMedicines.length,
                               itemBuilder: (context, index) {
                                 return MedicineCard(
-                                    name: filteredMedicines[index].medName ?? "Unknown",
+                                    name: filteredMedicines[index].medName ??
+                                        "Unknown",
                                     frequency:
-                                        filteredMedicines[index].frequency ?? "Unknown",
-                                    schedule: filteredMedicines[index].intakeTimes ?? [],
+                                        filteredMedicines[index].frequency ??
+                                            "Unknown",
+                                    schedule:
+                                        filteredMedicines[index].intakeTimes ??
+                                            [],
                                     onDelete: () => deleteMedicine(index),
                                     onEdit: () async {
                                       final result = await Navigator.push(
@@ -321,7 +352,8 @@ class _MedicineScreenState extends State<MedicineScreen>
                                             builder: (context) =>
                                                 AddMedicationScreen(
                                                   isEditing: true,
-                                                  medicine: currentMedicines[index],
+                                                  medicine:
+                                                      currentMedicines[index],
                                                 )),
                                       );
                                       if (result != null) {
@@ -355,19 +387,28 @@ class _MedicineScreenState extends State<MedicineScreen>
                             }
 
                             if (snapshot.hasData) {
-                              historyMedicines = snapshot.data!;
-                              filteredHistoryMedicines =
-                                  List.from(historyMedicines);
+                              if (historyMedicines != snapshot.data!) {
+                                historyMedicines = snapshot.data!;
+                              }
+                              if (filteredHistoryMedicines.isEmpty) {
+                                filteredHistoryMedicines =
+                                    List.from(historyMedicines);
+                              }
                             }
 
                             return ListView.builder(
                               itemCount: filteredHistoryMedicines.length,
                               itemBuilder: (context, index) {
                                 return MedicineCard(
-                                  name: filteredHistoryMedicines[index].medName ?? "Unknown",
-                                  frequency:
-                                      filteredHistoryMedicines[index].frequency ?? "Unknown",
-                                  schedule: filteredHistoryMedicines[index].intakeTimes ?? [],
+                                  name:
+                                      filteredHistoryMedicines[index].medName ??
+                                          "Unknown",
+                                  frequency: filteredHistoryMedicines[index]
+                                          .frequency ??
+                                      "Unknown",
+                                  schedule: filteredHistoryMedicines[index]
+                                          .intakeTimes ??
+                                      [],
                                   isHistory: true,
                                 );
                               },
@@ -466,7 +507,35 @@ class MedicineCard extends StatelessWidget {
                   ),
                   SizedBox(width: 10),
                   GestureDetector(
-                    onTap: onDelete,
+                    onTap: () {
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text("Confirm Delete"),
+                              content: Text(
+                                  "Are you sure you want to delete this medicine?"),
+                              actions: [
+                                TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: Text("Cancel")),
+                                TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                      if (onDelete != null) {
+                                        onDelete!();
+                                      }
+                                    },
+                                    child: Text(
+                                      "Delete",
+                                      style: TextStyle(color: Colors.red),
+                                    ))
+                              ],
+                            );
+                          });
+                    },
                     child: Icon(Icons.delete_forever, color: Colors.red),
                   ),
                 ],

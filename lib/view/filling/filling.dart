@@ -17,6 +17,7 @@ class PillAnimationScreen extends StatefulWidget {
 
 class _PillAnimationScreenState extends State<PillAnimationScreen> {
   int pillIndex = 0;
+  bool isRunning = false;
 
   final List<Offset> pillPositions = [
     Offset(0, -100), // Top
@@ -72,6 +73,7 @@ class _PillAnimationScreenState extends State<PillAnimationScreen> {
           SizedBox(height: 40),
           ElevatedButton(
             onPressed: () async {
+             if (isRunning) return; // Prevent multiple taps
               if (pillIndex < 4) {
                 setState(() {
                   pillIndex++;
@@ -82,6 +84,9 @@ class _PillAnimationScreenState extends State<PillAnimationScreen> {
                 //     MaterialPageRoute(builder: (context) => ),
                 //   );
               } else if (pillIndex == 4) {
+                setState(() {
+                  isRunning = true;
+                });
                 try {
                   await MedicineDao.addMedicineToUser(
                       widget.uid, widget.newMedicine);
@@ -100,6 +105,10 @@ class _PillAnimationScreenState extends State<PillAnimationScreen> {
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text("Failed to add medication: $e")));
+                } finally {
+                  setState(() {
+                    isRunning = false;
+                  });
                 }
               }
             },

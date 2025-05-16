@@ -2,6 +2,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../utils/responsive_text.dart';
 import '../../viewModel/provider/app_auth_provider.dart';
@@ -79,7 +80,12 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
       intakeTimes.removeAt(index);
     });
   }
-
+  String formatTimeOfDay24Hour(TimeOfDay time) {
+    final now = DateTime.now();
+    final dateTime =
+    DateTime(now.year, now.month, now.day, time.hour, time.minute);
+    return DateFormat('HH:mm').format(dateTime);
+  }
 
   void selectFrequency(BuildContext context) async {
     switch (await showDialog<FrequencyOption>(
@@ -620,18 +626,21 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                         if (isDoseMissing || isContainerMissing || isIntakeMissing) {
                           return;
                         }
+                        List<String> formattedIntakeTimes = intakeTimes
+                            .map((time) => formatTimeOfDay24Hour(time))
+                            .toList();
                         Map<dynamic, dynamic> medication = {
                           'container_no': containerNumber,
                           'dose': doseAmount,
                           'end_date': '${endDate?.day}/${endDate?.month}/${endDate?.year}',
                           'frequency': frequency,
-                          // 'intake_times': intakeTimes,
+                          'intake_times': formattedIntakeTimes,
                           'med_name': medicineController.text,
                           'ongoing': isOngoing,
                           'start_date': '${startDate?.day}/${startDate?.month}/${startDate?.year}'
                         };
                         print('//////////////////////////////////////////////////////////////////////////');
-                        print(intakeTimes);
+                        print(formattedIntakeTimes);
                         print('//////////////////////////////////////////////////////////////////////////');
                         dbRef.push().set(medication);
                         // logOut();

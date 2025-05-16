@@ -1,3 +1,4 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -34,6 +35,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
   DateTime? startDate;
   DateTime? endDate;
   bool isOngoing = false;
+  late DatabaseReference dbRef;
   String frequency = 'Daily';
   List<String> selectedDays = [];
   final List<String> days = [
@@ -138,6 +140,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
   @override
   void initState() {
     super.initState();
+    dbRef = FirebaseDatabase.instance.ref().child('medications');
     loadMedicineData();
   }
   Future<void> loadMedicineData() async {
@@ -617,6 +620,20 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                         if (isDoseMissing || isContainerMissing || isIntakeMissing) {
                           return;
                         }
+                        Map<dynamic, dynamic> medication = {
+                          'container_no': containerNumber,
+                          'dose': doseAmount,
+                          'end_date': '${endDate?.day}/${endDate?.month}/${endDate?.year}',
+                          'frequency': frequency,
+                          // 'intake_times': intakeTimes,
+                          'med_name': medicineController.text,
+                          'ongoing': isOngoing,
+                          'start_date': '${startDate?.day}/${startDate?.month}/${startDate?.year}'
+                        };
+                        print('//////////////////////////////////////////////////////////////////////////');
+                        print(intakeTimes);
+                        print('//////////////////////////////////////////////////////////////////////////');
+                        dbRef.push().set(medication);
                         // logOut();
                         Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) =>PillAnimationScreen()));
                             // CategoryPage()

@@ -45,6 +45,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
   bool isOngoing = false;
   String frequency = 'Daily';
   List<String> selectedDays = [];
+  bool isRunning = false;
   final List<String> days = [
     'Saturday',
     'Sunday',
@@ -852,7 +853,11 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                           borderRadius: BorderRadius.circular(6)),
                     ),
                   ),
-                  onPressed: () {
+                  onPressed: () async {
+                    if (isRunning) return; // Prevent multiple taps
+                    setState(() {
+                      isRunning = true;
+                    });
                     bool isDoseMissing = doseAmount == 0;
                     bool isContainerMissing = containerNumber == 0;
                     bool isIntakeMissing = intakeTimes.isEmpty;
@@ -868,44 +873,58 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                           : Colors.transparent;
                     });
                     if (formKey.currentState?.validate() == false) {
+                      setState(() {
+                        isRunning = false;
+                      });
                       return;
                     }
                     if (isDoseMissing ||
                         isContainerMissing ||
                         isIntakeMissing) {
+                      setState(() {
+                        isRunning = false;
+                      });
                       return;
                     }
-
-                    if (widget.isEditing && widget.medicine != null) {
-                      //update firestore
-                      saveMedication();
-                    } else {
-                      //initialize authProvider and MedicineUser to save in the filled.dart file
-                      var authProvider =
-                          Provider.of<AppAuthProvider>(context, listen: false);
-                      String? uid = authProvider.firebaseAuthUser?.uid;
-                      List<String> formattedIntakeTimes = intakeTimes
-                          .map((time) => formatTimeOfDay24Hour(time))
-                          .toList();
-                      newMedicine = MedicineUser(
-                        medName: medicineController.text,
-                        dose: doseAmount,
-                        containerNumber: containerNumber,
-                        ongoing: isOngoing,
-                        frequency: frequency,
-                        startDate: startDate,
-                        endDate: isOngoing ? null : endDate,
-                        intakeTimes: formattedIntakeTimes,
-                      );
-                      // logOut();
-                      Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => PillAnimationScreen(
-                                    uid: uid!,
-                                    newMedicine: newMedicine!,
-                                  )));
+                    try {
+                      if (widget.isEditing && widget.medicine != null) {
+                        //update firestore
+                        await saveMedication();
+                      } else {
+                        //initialize authProvider and MedicineUser to save in the filled.dart file
+                        var authProvider = Provider.of<AppAuthProvider>(context,
+                            listen: false);
+                        String? uid = authProvider.firebaseAuthUser?.uid;
+                        List<String> formattedIntakeTimes = intakeTimes
+                            .map((time) => formatTimeOfDay24Hour(time))
+                            .toList();
+                        newMedicine = MedicineUser(
+                          medName: medicineController.text,
+                          dose: doseAmount,
+                          containerNumber: containerNumber,
+                          ongoing: isOngoing,
+                          frequency: frequency,
+                          startDate: startDate,
+                          endDate: isOngoing ? null : endDate,
+                          intakeTimes: formattedIntakeTimes,
+                        );
+                        // logOut();
+                        Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => PillAnimationScreen(
+                                      uid: uid!,
+                                      newMedicine: newMedicine!,
+                                    )));
+                      }
+                    } finally {
+                      if (mounted) {
+                        setState(() {
+                          isRunning = false;
+                        });
+                      }
                     }
+
                     // CategoryPage()
                     // ),
                     // );

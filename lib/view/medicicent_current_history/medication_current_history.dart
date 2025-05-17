@@ -66,6 +66,7 @@ class _MedicineScreenState extends State<MedicineScreen>
         currentMedicines = medicines;
         filteredMedicines = List.from(currentMedicines);
       });
+      moveEndedMedicinesToHistory();
     }
   }
 
@@ -121,6 +122,30 @@ class _MedicineScreenState extends State<MedicineScreen>
     }
   }
 
+  void moveEndedMedicinesToHistory() async {
+    var authProvider = Provider.of<AppAuthProvider>(context, listen: false);
+    String? uid = authProvider.firebaseAuthUser?.uid;
+    if (uid == null) return;
+
+    DateTime today = DateTime.now();
+    today = DateTime(today.year, today.month, today.day);
+
+    for (var medicine in List<MedicineUser>.from(currentMedicines)) {
+      if (medicine.endDate != null) {
+        DateTime enddate = DateTime(
+          medicine.endDate!.year,
+          medicine.endDate!.month,
+          medicine.endDate!.day,
+        );
+        if (enddate.isBefore(today)) {
+          try {
+            await MedicineDao.moveMedicineToHistory(uid, medicine.id!);
+          } catch (e) {}
+        }
+      }
+    }
+
+  }
   // void editMedicine(int index) {
   //   TextEditingController nameController =
   //       TextEditingController(text: currentMedicines[index].medName ?? "");
@@ -325,12 +350,10 @@ class _MedicineScreenState extends State<MedicineScreen>
                               return Center(child: Text("No medicines found."));
                             }
                             if (snapshot.hasData) {
-                              if(currentMedicines != snapshot.data!) {
+                              if (currentMedicines != snapshot.data!) {
                                 currentMedicines = snapshot.data!;
                               }
-                              if (filteredMedicines.isEmpty) {
-                                filteredMedicines = List.from(currentMedicines);
-                              }
+                              filteredMedicines = List.from(currentMedicines);
                             }
                             return ListView.builder(
                               itemCount: filteredMedicines.length,
@@ -357,11 +380,15 @@ class _MedicineScreenState extends State<MedicineScreen>
                                                 )),
                                       );
                                       if (result != null) {
-                                        setState(() {
-                                          currentMedicines[index] = result;
-                                          filteredMedicines =
-                                              List.from(currentMedicines);
-                                        });
+                                        // setState(() {
+                                        //   currentMedicines[index] =
+                                        //       MedicineUser.fromFireStore(
+                                        //           result["uid"] ?? "",
+                                        //           result
+                                        //               as Map<String, dynamic>?);
+                                        //   filteredMedicines =
+                                        //       List.from(currentMedicines);
+                                        // });
                                       }
                                     });
                               },
@@ -435,10 +462,13 @@ class _MedicineScreenState extends State<MedicineScreen>
           );
           if (result != null) {
             if (result["isEditing"] == false) {
-              setState(() {
-                currentMedicines.add(result["newMedicine"]);
-                filteredMedicines = List.from(currentMedicines);
-              });
+              // setState(() {
+              //   currentMedicines.add(MedicineUser.fromFireStore(
+              //     result["newMedicine"]["uid"] ?? "",
+              //     result["newMedicine"] as Map<String, dynamic>?,
+              //   ));
+              //   filteredMedicines = List.from(currentMedicines);
+              // });
             }
           }
         },

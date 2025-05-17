@@ -101,7 +101,7 @@ class _PillAnimationScreenState extends State<PillAnimationScreen> {
                       MaterialPageRoute(
                           builder: (context) => MedicineScreen(
                               newMedicine: widget
-                                  .newMedicine))); //where should i navigate to after the pill animation?
+                                  .newMedicine)));
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text("Failed to add medication: $e")));

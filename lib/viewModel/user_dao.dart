@@ -6,10 +6,10 @@ class UsersDao {
   static CollectionReference<AppUser> getUsersCollection() {
     var db = FirebaseFirestore.instance;
     return db.collection('usersInfo').withConverter<AppUser>(
-      fromFirestore: (snapshot, options) =>
-          AppUser.fromFireStore(snapshot.data()),
-      toFirestore: (user, options) => user.toFireStore(),
-    );
+          fromFirestore: (snapshot, options) =>
+              AppUser.fromFireStore(snapshot.data()),
+          toFirestore: (user, options) => user.toFireStore(),
+        );
   }
 
   static Future<void> addUserToDatabase(AppUser user) {
@@ -24,4 +24,13 @@ class UsersDao {
     var docSnapShot = await docRef.get();
     return docSnapShot.data();
   }
+
+  static Future<void> updateUserInfo(
+      String uid, Map<String, dynamic> updatedData) async {
+    var usersCollection = getUsersCollection();
+    var docRef = usersCollection.doc(uid);
+    await docRef.update(updatedData);
+  }
+
+  
 }

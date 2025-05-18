@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:provider/provider.dart';
 
@@ -23,7 +24,7 @@ class _CaregiverRoleState extends State<CaregiverRole> {
   bool privacyPolicyChecked = false;
 // Controls visibility of Patient ID field
   final formKey = GlobalKey<FormState>();
-  var value=-1;
+  var value = -1;
   // final dateController = TextEditingController();
   final boxSerialController = TextEditingController();
   final medicalConditionController = TextEditingController();
@@ -34,10 +35,11 @@ class _CaregiverRoleState extends State<CaregiverRole> {
   final nameController = TextEditingController();
   final phoneController = TextEditingController();
   final relationController = TextEditingController();
-  bool allowCaregiverView= false;
+  bool allowCaregiverView = false;
+  String? fullPhoneNumber;
 
   final patientOrCaregiverState = 'Cargiver';
-  String genderValue='';
+  String genderValue = '';
   String privacyPolicyText = '';
   bool obsecure = true;
   bool obsecureConf = true;
@@ -48,15 +50,15 @@ class _CaregiverRoleState extends State<CaregiverRole> {
     super.dispose();
   }
 
-
   @override
   void initState() {
     super.initState();
     loadPrivacyPolicy();
   }
+
   Future<void> loadPrivacyPolicy() async {
-    String loadedText = await rootBundle.loadString(
-        'assets/data_set/hcs_privacy_policy.txt');
+    String loadedText =
+        await rootBundle.loadString('assets/data_set/hcs_privacy_policy.txt');
     setState(() {
       privacyPolicyText = loadedText;
     });
@@ -104,10 +106,8 @@ class _CaregiverRoleState extends State<CaregiverRole> {
                     children: [
                       Text(
                         "Caregiver",
-                        style: GoogleFonts.getFont(
-                            'Poppins', fontWeight: FontWeight.w500,
-                            fontSize: 30
-                        ),
+                        style: GoogleFonts.getFont('Poppins',
+                            fontWeight: FontWeight.w500, fontSize: 30),
                         textScaler: TextScaler.linear(
                             ScaleSize.textScaleFactor(context)),
                       ),
@@ -119,10 +119,8 @@ class _CaregiverRoleState extends State<CaregiverRole> {
                     children: [
                       Text(
                         "Caregiver information to ensure proper care.",
-                        style: GoogleFonts.getFont(
-                            'Poppins', fontWeight: FontWeight.w400,
-                            color: Colors.grey
-                        ),
+                        style: GoogleFonts.getFont('Poppins',
+                            fontWeight: FontWeight.w400, color: Colors.grey),
                         textScaler: TextScaler.linear(
                             ScaleSize.textScaleFactor(context)),
                       ),
@@ -133,10 +131,11 @@ class _CaregiverRoleState extends State<CaregiverRole> {
                 Text(
                   "Name * ",
                   style: GoogleFonts.getFont(
-                    'Poppins', fontWeight: FontWeight.w500,
+                    'Poppins',
+                    fontWeight: FontWeight.w500,
                   ),
-                  textScaler: TextScaler.linear(
-                      ScaleSize.textScaleFactor(context)),
+                  textScaler:
+                      TextScaler.linear(ScaleSize.textScaleFactor(context)),
                 ),
                 SizedBox(height: screenHeight * 0.01),
                 TextFormField(
@@ -169,7 +168,8 @@ class _CaregiverRoleState extends State<CaregiverRole> {
                         color: Color(0xff6A6A6A63),
                       ),
                     ),
-                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide(
                         color: Color(0xff4979FB),
                       ),
@@ -177,12 +177,14 @@ class _CaregiverRoleState extends State<CaregiverRole> {
                   ),
                 ),
                 SizedBox(height: screenHeight * 0.02),
-                Text('Email *',
+                Text(
+                  'Email *',
                   style: GoogleFonts.getFont(
-                    'Poppins', fontWeight: FontWeight.w500,
+                    'Poppins',
+                    fontWeight: FontWeight.w500,
                   ),
-                  textScaler: TextScaler.linear(
-                      ScaleSize.textScaleFactor(context)),
+                  textScaler:
+                      TextScaler.linear(ScaleSize.textScaleFactor(context)),
                 ),
                 TextFormField(
                   cursorColor: Color(0xff4979FB),
@@ -211,17 +213,19 @@ class _CaregiverRoleState extends State<CaregiverRole> {
                   ),
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   validator: (email) =>
-                  email != null && !EmailValidator.validate(email)
-                      ? 'Enter a valid Email'
-                      : null,
+                      email != null && !EmailValidator.validate(email)
+                          ? 'Enter a valid Email'
+                          : null,
                 ),
                 SizedBox(height: screenHeight * 0.01),
-                Text('Password *',
+                Text(
+                  'Password *',
                   style: GoogleFonts.getFont(
-                    'Poppins', fontWeight: FontWeight.w500,
+                    'Poppins',
+                    fontWeight: FontWeight.w500,
                   ),
-                  textScaler: TextScaler.linear(
-                      ScaleSize.textScaleFactor(context)),
+                  textScaler:
+                      TextScaler.linear(ScaleSize.textScaleFactor(context)),
                 ),
                 TextFormField(
                   cursorColor: Color(0xff4979FB),
@@ -229,12 +233,14 @@ class _CaregiverRoleState extends State<CaregiverRole> {
                   decoration: InputDecoration(
                     hintText: 'Enter your password',
                     hintStyle: TextStyle(color: Colors.grey, fontSize: 13),
-                    suffixIcon: IconButton(onPressed: () {
-                      setState(() {
-                        obsecure = !obsecure;
-                      });
-                    }, icon: Icon(obsecure ? Icons.visibility_off : Icons
-                        .visibility),
+                    suffixIcon: IconButton(
+                      onPressed: () {
+                        setState(() {
+                          obsecure = !obsecure;
+                        });
+                      },
+                      icon: Icon(
+                          obsecure ? Icons.visibility_off : Icons.visibility),
                     ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -259,17 +265,13 @@ class _CaregiverRoleState extends State<CaregiverRole> {
                   validator: (value) {
                     if (value != null && value.length < 8) {
                       return 'enter minimum 8 characters';
-                    }
-                    else if (!value!.contains(RegExp(r'[A-Z]'))) {
+                    } else if (!value!.contains(RegExp(r'[A-Z]'))) {
                       return 'the password must contain a capital letter';
-                    }
-                    else if (!value!.contains(RegExp(r'[a-z]'))) {
+                    } else if (!value!.contains(RegExp(r'[a-z]'))) {
                       return 'the password must contain a lower case letter';
-                    }
-                    else if (!value!.contains(RegExp(r'[0-9]'))) {
+                    } else if (!value!.contains(RegExp(r'[0-9]'))) {
                       return 'the password must contain a number';
-                    }
-                    else {
+                    } else {
                       return null;
                     }
                   },
@@ -277,24 +279,29 @@ class _CaregiverRoleState extends State<CaregiverRole> {
                   obscuringCharacter: '*',
                 ),
                 SizedBox(height: screenHeight * 0.02),
-                Text('Confirm Password *',
+                Text(
+                  'Confirm Password *',
                   style: GoogleFonts.getFont(
-                    'Poppins', fontWeight: FontWeight.w500,
+                    'Poppins',
+                    fontWeight: FontWeight.w500,
                   ),
-                  textScaler: TextScaler.linear(
-                      ScaleSize.textScaleFactor(context)),
+                  textScaler:
+                      TextScaler.linear(ScaleSize.textScaleFactor(context)),
                 ),
                 TextFormField(
                   cursorColor: Color(0xff4979FB),
                   decoration: InputDecoration(
                     hintText: 'Re-enter your password',
                     hintStyle: TextStyle(color: Colors.grey, fontSize: 13),
-                    suffixIcon: IconButton(onPressed: () {
-                      setState(() {
-                        obsecureConf = !obsecureConf;
-                      });
-                    }, icon: Icon(obsecureConf ? Icons.visibility_off : Icons
-                        .visibility),
+                    suffixIcon: IconButton(
+                      onPressed: () {
+                        setState(() {
+                          obsecureConf = !obsecureConf;
+                        });
+                      },
+                      icon: Icon(obsecureConf
+                          ? Icons.visibility_off
+                          : Icons.visibility),
                     ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -320,11 +327,9 @@ class _CaregiverRoleState extends State<CaregiverRole> {
                   validator: (value) {
                     if (value != passwordController.text.trim()) {
                       return 'The password is not the same';
-                    }
-                    else if (value!.isEmpty) {
+                    } else if (value!.isEmpty) {
                       return 'Please confirm the password';
-                    }
-                    else {
+                    } else {
                       return null;
                     }
                   },
@@ -333,10 +338,11 @@ class _CaregiverRoleState extends State<CaregiverRole> {
                 Text(
                   "Date of birth * ",
                   style: GoogleFonts.getFont(
-                    'Poppins', fontWeight: FontWeight.w500,
+                    'Poppins',
+                    fontWeight: FontWeight.w500,
                   ),
-                  textScaler: TextScaler.linear(
-                      ScaleSize.textScaleFactor(context)),
+                  textScaler:
+                      TextScaler.linear(ScaleSize.textScaleFactor(context)),
                 ),
                 SizedBox(height: screenHeight * 0.01),
                 TextFormField(
@@ -352,7 +358,6 @@ class _CaregiverRoleState extends State<CaregiverRole> {
                       Icons.calendar_month,
                       color: Color(0xff4979FB),
                     ),
-
                     hintText: 'mm/dd/yyyy',
                     hintStyle: TextStyle(
                       color: Colors.grey,
@@ -370,7 +375,8 @@ class _CaregiverRoleState extends State<CaregiverRole> {
                         color: Color(0xff6A6A6A63),
                       ),
                     ),
-                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide(
                         color: Color(0xff4979FB),
                       ),
@@ -383,26 +389,27 @@ class _CaregiverRoleState extends State<CaregiverRole> {
                     return null;
                   },
                 ),
-
                 SizedBox(height: screenHeight * 0.01),
                 Text(
                   "Phone no *",
                   style: GoogleFonts.getFont(
-                    'Poppins', fontWeight: FontWeight.w500,
+                    'Poppins',
+                    fontWeight: FontWeight.w500,
                   ),
-                  textScaler: TextScaler.linear(
-                      ScaleSize.textScaleFactor(context)),
+                  textScaler:
+                      TextScaler.linear(ScaleSize.textScaleFactor(context)),
                 ),
                 SizedBox(height: screenHeight * 0.01),
                 IntlPhoneField(
-
                   validator: (p0) {
                     if (p0!.isValidNumber()) {
                       return "Date is required";
-                    }else{
+                    } else {
                       return null;
                     }
-
+                  },
+                  onChanged: (phone) {
+                    fullPhoneNumber = phone.completeNumber;
                   },
                   cursorColor: Color(0xff4979FB),
                   controller: phoneController,
@@ -424,53 +431,74 @@ class _CaregiverRoleState extends State<CaregiverRole> {
                         color: Color(0xff6A6A6A63),
                       ),
                     ),
-                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide(
                         color: Color(0xff4979FB),
                       ),
                     ),
-                  ),),
+                  ),
+                ),
                 SizedBox(height: screenHeight * 0.01),
                 Text(
                   "Gender * ",
                   style: GoogleFonts.getFont(
-                    'Poppins', fontWeight: FontWeight.w500,
+                    'Poppins',
+                    fontWeight: FontWeight.w500,
                   ),
-                  textScaler: TextScaler.linear(
-                      ScaleSize.textScaleFactor(context)),
+                  textScaler:
+                      TextScaler.linear(ScaleSize.textScaleFactor(context)),
                 ),
                 DropdownButtonFormField(
-                  items:[
-                    DropdownMenuItem(child: Text('-Select a gender-',style: GoogleFonts.getFont(
-                      'Poppins', fontWeight: FontWeight.w400,
+                  items: [
+                    DropdownMenuItem(
+                      child: Text(
+                        '-Select a gender-',
+                        style: GoogleFonts.getFont(
+                          'Poppins',
+                          fontWeight: FontWeight.w400,
+                        ),
+                        textScaler: TextScaler.linear(
+                            ScaleSize.textScaleFactor(context)),
+                      ),
+                      value: -1,
                     ),
-                      textScaler: TextScaler.linear(
-                          ScaleSize.textScaleFactor(context)),
-                    ),value: -1,),
-                    DropdownMenuItem(child: Text('Female',style: GoogleFonts.getFont(
-                      'Poppins', fontWeight: FontWeight.w400,
+                    DropdownMenuItem(
+                      child: Text(
+                        'Female',
+                        style: GoogleFonts.getFont(
+                          'Poppins',
+                          fontWeight: FontWeight.w400,
+                        ),
+                        textScaler: TextScaler.linear(
+                            ScaleSize.textScaleFactor(context)),
+                      ),
+                      value: 1,
                     ),
-                      textScaler: TextScaler.linear(
-                          ScaleSize.textScaleFactor(context)),
-                    ),value: 1,),
-                    DropdownMenuItem(child: Text('Male',style: GoogleFonts.getFont(
-                      'Poppins', fontWeight: FontWeight.w400,
+                    DropdownMenuItem(
+                      child: Text(
+                        'Male',
+                        style: GoogleFonts.getFont(
+                          'Poppins',
+                          fontWeight: FontWeight.w400,
+                        ),
+                        textScaler: TextScaler.linear(
+                            ScaleSize.textScaleFactor(context)),
+                      ),
+                      value: 2,
                     ),
-                      textScaler: TextScaler.linear(
-                          ScaleSize.textScaleFactor(context)),
-                    ),value: 2,),
-                  ], onChanged: (value) {
-                  setState(() {
-                    if(value==2){
-                      genderValue='Male';
-                    }else if(value==1){
-                      genderValue='Female';
-                    }
-                    else if(value==-1){
-                      genderValue='';
-                    }
-                  });
-                },
+                  ],
+                  onChanged: (value) {
+                    setState(() {
+                      if (value == 2) {
+                        genderValue = 'Male';
+                      } else if (value == 1) {
+                        genderValue = 'Female';
+                      } else if (value == -1) {
+                        genderValue = '';
+                      }
+                    });
+                  },
                   value: value,
                   borderRadius: BorderRadius.circular(12),
                   decoration: InputDecoration(
@@ -490,19 +518,19 @@ class _CaregiverRoleState extends State<CaregiverRole> {
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide(
                         color: Color(0xff4979FB),
-                      ),),
-
+                      ),
+                    ),
                   ),
-
                 ),
                 SizedBox(height: screenHeight * 0.01),
                 Text(
                   "Relationship * ",
                   style: GoogleFonts.getFont(
-                    'Poppins', fontWeight: FontWeight.w500,
+                    'Poppins',
+                    fontWeight: FontWeight.w500,
                   ),
-                  textScaler: TextScaler.linear(
-                      ScaleSize.textScaleFactor(context)),
+                  textScaler:
+                      TextScaler.linear(ScaleSize.textScaleFactor(context)),
                 ),
                 SizedBox(height: screenHeight * 0.01),
                 TextFormField(
@@ -536,7 +564,8 @@ class _CaregiverRoleState extends State<CaregiverRole> {
                         color: Color(0xff6A6A6A63),
                       ),
                     ),
-                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide(
                         color: Color(0xff4979FB),
                       ),
@@ -547,10 +576,11 @@ class _CaregiverRoleState extends State<CaregiverRole> {
                 Text(
                   "Medical condition ",
                   style: GoogleFonts.getFont(
-                    'Poppins', fontWeight: FontWeight.w500,
+                    'Poppins',
+                    fontWeight: FontWeight.w500,
                   ),
-                  textScaler: TextScaler.linear(
-                      ScaleSize.textScaleFactor(context)),
+                  textScaler:
+                      TextScaler.linear(ScaleSize.textScaleFactor(context)),
                 ),
                 SizedBox(height: screenHeight * 0.01),
                 TextFormField(
@@ -575,7 +605,8 @@ class _CaregiverRoleState extends State<CaregiverRole> {
                         color: Color(0xff6A6A6A63),
                       ),
                     ),
-                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide(
                         color: Color(0xff4979FB),
                       ),
@@ -585,10 +616,11 @@ class _CaregiverRoleState extends State<CaregiverRole> {
                 Text(
                   "Box serial number * ",
                   style: GoogleFonts.getFont(
-                    'Poppins', fontWeight: FontWeight.w500,
+                    'Poppins',
+                    fontWeight: FontWeight.w500,
                   ),
-                  textScaler: TextScaler.linear(
-                      ScaleSize.textScaleFactor(context)),
+                  textScaler:
+                      TextScaler.linear(ScaleSize.textScaleFactor(context)),
                 ),
                 SizedBox(height: screenHeight * 0.01),
                 TextFormField(
@@ -599,7 +631,8 @@ class _CaregiverRoleState extends State<CaregiverRole> {
                     if (!showPatientIdField && value!.isEmpty) {
                       return "Serial number is required";
                     }
-                    if (!showPatientIdField && !RegExp(r'^[0-9]').hasMatch(value!)) {
+                    if (!showPatientIdField &&
+                        !RegExp(r'^[0-9]').hasMatch(value!)) {
                       return "Numbers only";
                     }
                     if (value!.length != 8) {
@@ -626,7 +659,8 @@ class _CaregiverRoleState extends State<CaregiverRole> {
                         color: Color(0xff6A6A6A63),
                       ),
                     ),
-                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide(
                         color: Color(0xff4979FB),
                       ),
@@ -641,7 +675,8 @@ class _CaregiverRoleState extends State<CaregiverRole> {
                       value: showPatientIdField,
                       onChanged: (bool? value) {
                         setState(() {
-                          showPatientIdField = value ?? false; // Toggle Patient ID field visibility
+                          showPatientIdField = value ??
+                              false; // Toggle Patient ID field visibility
                         });
                       },
                     ),
@@ -665,10 +700,11 @@ class _CaregiverRoleState extends State<CaregiverRole> {
                   Text(
                     "Patient Id * ",
                     style: GoogleFonts.getFont(
-                      'Poppins', fontWeight: FontWeight.w500,
+                      'Poppins',
+                      fontWeight: FontWeight.w500,
                     ),
-                    textScaler: TextScaler.linear(
-                        ScaleSize.textScaleFactor(context)),
+                    textScaler:
+                        TextScaler.linear(ScaleSize.textScaleFactor(context)),
                   ),
                   SizedBox(height: screenHeight * 0.01),
                   TextFormField(
@@ -678,7 +714,8 @@ class _CaregiverRoleState extends State<CaregiverRole> {
                       if (showPatientIdField && value!.isEmpty) {
                         return "Patient ID is required";
                       }
-                      if (showPatientIdField && !RegExp(r'^[0-9]').hasMatch(value!)) {
+                      if (showPatientIdField &&
+                          !RegExp(r'^[0-9]').hasMatch(value!)) {
                         return "Numbers only";
                       }
                       if (showPatientIdField && value!.length != 6) {
@@ -705,7 +742,8 @@ class _CaregiverRoleState extends State<CaregiverRole> {
                           color: Color(0xff6A6A6A63),
                         ),
                       ),
-                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide(
                           color: Color(0xff4979FB),
                         ),
@@ -726,27 +764,28 @@ class _CaregiverRoleState extends State<CaregiverRole> {
                         });
                       },
                     ),
-                    Text("I agree to the", style: GoogleFonts.getFont(
-                      'Inter', fontWeight: FontWeight.w500,
-                      // fontSize: 14,
-                    ),
-                      textScaler: TextScaler.linear(
-                          ScaleSize.textScaleFactor(context)),
+                    Text(
+                      "I agree to the",
+                      style: GoogleFonts.getFont(
+                        'Inter', fontWeight: FontWeight.w500,
+                        // fontSize: 14,
+                      ),
+                      textScaler:
+                          TextScaler.linear(ScaleSize.textScaleFactor(context)),
                     ),
                     TextButton(
-
                       onPressed: () => showPrivacyPolicyDialog(),
                       child: Text(
-                        'Privacy Policy', style: GoogleFonts.getFont('Inter',
-                        fontWeight: FontWeight.w500,
-                        color: Color(0xff4979FB),
-                      ),
-
-                        textScaler: TextScaler.linear(ScaleSize
-                            .textScaleFactor(context)),
+                        'Privacy Policy',
+                        style: GoogleFonts.getFont(
+                          'Inter',
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xff4979FB),
+                        ),
+                        textScaler: TextScaler.linear(
+                            ScaleSize.textScaleFactor(context)),
                       ),
                     ),
-
                   ],
                 ),
                 SizedBox(height: screenHeight * 0.02),
@@ -766,8 +805,11 @@ class _CaregiverRoleState extends State<CaregiverRole> {
                           emailController.text,
                           passwordController.text,
                           nameController.text,
-                          dateController.text,
-                          phoneController.text,
+                          dateController.text.isNotEmpty
+                              ? DateFormat('dd/MM/yyyy')
+                                  .parse(dateController.text)
+                              : DateTime.now(),
+                          fullPhoneNumber ?? phoneController.text,
                           genderValue,
                           patientOrCaregiverState,
                           allowCaregiverView,
@@ -792,42 +834,54 @@ class _CaregiverRoleState extends State<CaregiverRole> {
       ),
     );
   }
+
   void showPrivacyPolicyDialog() {
     showDialog(
       context: context,
-      builder: (context) =>
-          AlertDialog(
-            title: Center(child: const Text("Privacy Policy")),
-            content: SizedBox(
-              width: double.maxFinite,
-              child: SingleChildScrollView(
-                child: Text(privacyPolicyText),
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  setState(() {
-                    privacyPolicyChecked = true;
-                    privacyPolicyCheckColor = Colors.grey;
-                  });
-                  Navigator.pop(context);
-                },
-                child: const Text("I Agree"),
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        title: Center(child: const Text("Privacy Policy")),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            child: Text(privacyPolicyText),
           ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              setState(() {
+                privacyPolicyChecked = true;
+                privacyPolicyCheckColor = Colors.grey;
+              });
+              Navigator.pop(context);
+            },
+            child: const Text("I Agree"),
+          ),
+        ],
+      ),
     );
   }
-  void createAccount(String email, String password, String userName,String dateOfBirth,
-      String phone, String gender,String patientOrCaregiver,bool allowCaregiverView,String relationship,[String? medicalCondition]) async {
+
+  void createAccount(
+      String email,
+      String password,
+      String userName,
+      DateTime dateOfBirth,
+      String phone,
+      String gender,
+      String patientOrCaregiver,
+      bool allowCaregiverView,
+      String relationship,
+      [String? medicalCondition]) async {
     var authProvider = Provider.of<AppAuthProvider>(context, listen: false);
 
     setState(() {
       privacyPolicyCheckColor = privacyPolicyChecked ? Colors.grey : Colors.red;
     });
 
-    if (formKey.currentState?.validate() == false || !privacyPolicyChecked || genderValue =='') {
+    if (formKey.currentState?.validate() == false ||
+        !privacyPolicyChecked ||
+        genderValue == '') {
       return;
     }
 
@@ -840,13 +894,13 @@ class _CaregiverRoleState extends State<CaregiverRole> {
         email: email,
         userName: userName,
         password: password,
-        dateOfBirth:dateOfBirth,
-        phone:phone,
-        gender:gender,
-        relationship:relationship,
-        medicalCondition:medicalCondition!.isEmpty?"":medicalCondition,
-        patientOrCaregiver:patientOrCaregiver,
-        allowCaregiverView:allowCaregiverView,
+        dateOfBirth: dateOfBirth,
+        phone: phone,
+        gender: gender,
+        relationship: relationship,
+        medicalCondition: medicalCondition!.isEmpty ? "" : medicalCondition,
+        patientOrCaregiver: patientOrCaregiver,
+        allowCaregiverView: allowCaregiverView,
       );
 
       // Send email verification
@@ -863,7 +917,8 @@ class _CaregiverRoleState extends State<CaregiverRole> {
       if (context.mounted) {
         DialogUtils.showMessageDialog(
           context,
-          message: 'Registration successful! A verification email has been sent to your email address. Please login',
+          message:
+              'Registration successful! A verification email has been sent to your email address. Please login',
           posActionTitle: 'OK',
           posAction: () {
             Navigator.pushReplacementNamed(context, AppRoutes.loginRoute);
@@ -884,7 +939,8 @@ class _CaregiverRoleState extends State<CaregiverRole> {
       } else if (e.code == 'email-already-in-use') {
         DialogUtils.showMessageDialog(
           context,
-          message: 'The account already exists for that email. Try another account.',
+          message:
+              'The account already exists for that email. Try another account.',
           posActionTitle: 'OK',
           posAction: () => Navigator.pop(context),
         );
@@ -900,6 +956,7 @@ class _CaregiverRoleState extends State<CaregiverRole> {
       );
     }
   }
+
   var finalSelectedDate = DateTime.now();
   DateTime selectedDate = DateTime.now();
   TextEditingController dateController = new TextEditingController();
@@ -909,12 +966,13 @@ class _CaregiverRoleState extends State<CaregiverRole> {
         context: context,
         initialDate: selectedDate,
         firstDate: DateTime(1800),
-        lastDate: DateTime.now()
-    );
-    if (userSelectedDate != null&& userSelectedDate != selectedDate)
+        lastDate: DateTime.now());
+    if (userSelectedDate != null && userSelectedDate != selectedDate)
       setState(() {
         selectedDate = userSelectedDate;
-        dateController.value = TextEditingValue(text: '${userSelectedDate.day}-${userSelectedDate.month}-${userSelectedDate.year}');
+        dateController.value = TextEditingValue(
+            text:
+                '${userSelectedDate.day}/${userSelectedDate.month}/${userSelectedDate.year}');
       });
   }
 }

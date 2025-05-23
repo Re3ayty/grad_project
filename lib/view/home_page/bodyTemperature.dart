@@ -63,65 +63,26 @@ class _BodyTemperatureState extends State<BodyTemperature> {
             SizedBox(height: 7),
 
             // Contact and Call button
-            LayoutBuilder(
-              builder: (context, constraints) {
-                return Row(
+
+                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     ConstrainedBox(
                       constraints: BoxConstraints(
-                        maxWidth: constraints.maxWidth * 0.5,
+                        // maxWidth: constraints.maxWidth * 0.5,
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            children: [
-                              Stack(
-                                children:[ Padding(
-                                  padding: const EdgeInsets.only(right: 3),
-                                  child: Text(
-                                    'C',
-                                    style:GoogleFonts.getFont('Poppins',fontWeight: FontWeight.w400,
-                                        fontSize: 15
-                                    ),
-                                    textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 3),
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(1000),
-                                        border: Border.all(color: Colors.black),
-                                      ),
-                                      width: 4,
-                                      height: 4,
-                                    ),
-                                  ),
-
-                              ],
-                              alignment: Alignment.topRight),
-                              Text(
-                                ' : ${temperatureC}',
-                                style:GoogleFonts.getFont('Poppins',fontWeight: FontWeight.w400,
-                                    fontSize: 15
-                                ),
-                                textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-
-                          ),
-
-                          Row(
-                            children: [
-                              Stack(
+                          Padding(
+                            padding: const EdgeInsets.only(left: 4),
+                            child: Row(
+                              children: [
+                                Stack(
                                   children:[ Padding(
-                                    padding: const EdgeInsets.only(right: 6),
+                                    padding: const EdgeInsets.only(right: 3),
                                     child: Text(
-                                      'F',
+                                      'C',
                                       style:GoogleFonts.getFont('Poppins',fontWeight: FontWeight.w400,
                                           fontSize: 15
                                       ),
@@ -141,18 +102,62 @@ class _BodyTemperatureState extends State<BodyTemperature> {
                                       ),
                                     ),
 
-                                  ],
-                                  alignment: Alignment.topRight),
-                              Text(
-                                ' : ${temperatureF}',
-                                style:GoogleFonts.getFont('Poppins',fontWeight: FontWeight.w400,
-                                    fontSize: 15
+                                ],
+                                alignment: Alignment.topRight),
+                                Text(
+                                  ' : ${temperatureC}',
+                                  style:GoogleFonts.getFont('Poppins',fontWeight: FontWeight.w400,
+                                      fontSize: 15
+                                  ),
+                                  textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
+                              ],
 
+                            ),
+                          ),
+
+                          Padding(
+                            padding: const EdgeInsets.only(left: 4),
+                            child: Row(
+                              children: [
+                                Stack(
+                                    children:[ Padding(
+                                      padding: const EdgeInsets.only(right: 6),
+                                      child: Text(
+                                        'F',
+                                        style:GoogleFonts.getFont('Poppins',fontWeight: FontWeight.w400,
+                                            fontSize: 15
+                                        ),
+                                        textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 3),
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(1000),
+                                            border: Border.all(color: Colors.black),
+                                          ),
+                                          width: 4,
+                                          height: 4,
+                                        ),
+                                      ),
+
+                                    ],
+                                    alignment: Alignment.topRight),
+                                Text(
+                                  ' : ${temperatureF}',
+                                  style:GoogleFonts.getFont('Poppins',fontWeight: FontWeight.w400,
+                                      fontSize: 15
+                                  ),
+                                  textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+
+                            ),
                           ),
                         ],
                       ),
@@ -179,9 +184,7 @@ class _BodyTemperatureState extends State<BodyTemperature> {
                       ),
                     )
                   ],
-                );
-              },
-            )
+                ),
           ],
         ),
       ),

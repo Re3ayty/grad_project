@@ -33,7 +33,7 @@ class _BoxStatusCardState extends State<BoxStatusCard> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: Color.fromRGBO(101, 193, 223, 1), // Custom border color
+          color: Colors.green, // Custom border color
           width: 1,
         ),
         boxShadow: [
@@ -52,7 +52,7 @@ class _BoxStatusCardState extends State<BoxStatusCard> {
             Row(
               children: [
                 Icon(Icons.medical_services_outlined,
-                    color: Color.fromRGBO(101, 193, 223, 1)),
+                    color: Colors.green),
                 SizedBox(width: w*0.02),
                 Text(
                   "Box Status",

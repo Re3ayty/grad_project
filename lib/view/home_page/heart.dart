@@ -4,9 +4,12 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
+import 'package:provider/provider.dart';
 
 import '../../utils/responsive_text.dart';
+import '../../viewModel/provider/app_auth_provider.dart';
 import 'history_screen.dart';
 
 class HealthMetricsCard extends StatefulWidget {
@@ -21,6 +24,7 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
 
   @override
   Widget build(BuildContext context) {
+    var authProvider = Provider.of<AppAuthProvider>(context);
     int avgBPM = widget.healthMatrixData['avgBPM'];
     // int avgSpO2 = widget.healthMatrixData['avgSpO2'];
     bool fingerPlaced=widget.healthMatrixData['fingerPlaced'];
@@ -31,13 +35,226 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
     dynamic h = MediaQuery.of(context).size.height;
     dynamic w = MediaQuery.of(context).size.width;
     String bpmState='normal';
+    String SpO2State='';
     final double oxygenPercent = 98;
     final clampedPercent = oxygenPercent.clamp(0.0, 100.0);
     bool isLiveBPMworking= liveBPM!=0;
     bool isLiveSpO2working= liveBPM!=0;
     bool bothLiveWorking= isLiveBPMworking|| isLiveSpO2working;
     String measureButton='';
-
+    String? usersGender=authProvider.databaseUser!.gender;
+    String? userDateOfBirth=authProvider.databaseUser!.dateOfBirth;
+    int? usersAge=(DateFormat('dd-MM-yy').parse(userDateOfBirth!).year)-DateTime.now().year;
+    if(usersGender=='Female')
+    {
+      if(usersAge<=25)
+      {
+        if(liveBPM<64)
+        {
+          bpmState='low';
+        }
+        else if(liveBPM>80)
+        {
+          bpmState='high';
+        }
+        else
+        {
+          bpmState='normal';
+        }
+      }
+      else if(usersAge>=26 && usersAge<=35)
+      {
+        {
+          if(liveBPM<64)
+          {
+            bpmState='low';
+          }
+          else if(liveBPM>81)
+          {
+            bpmState='high';
+          }
+          else
+          {
+            bpmState='normal';
+          }
+        }
+      }
+      else if(usersAge>=36 && usersAge<=45)
+      {
+        {
+          if(liveBPM<65)
+          {
+            bpmState='low';
+          }
+          else if(liveBPM>82)
+          {
+            bpmState='high';
+          }
+          else
+          {
+            bpmState='normal';
+          }
+        }
+      }
+      else if(usersAge>=46 && usersAge<=55)
+      {
+        {
+          if(liveBPM<66)
+          {
+            bpmState='low';
+          }
+          else if(liveBPM>83)
+          {
+            bpmState='high';
+          }
+          else
+          {
+            bpmState='normal';
+          }
+        }
+      }
+      else if(usersAge>=56 && usersAge<=65)
+      {
+        {
+          if(liveBPM<64)
+          {
+            bpmState='low';
+          }
+          else if(liveBPM>82)
+          {
+            bpmState='high';
+          }
+          else
+          {
+            bpmState='normal';
+          }
+        }
+      }
+      else if(usersAge>65)
+      {
+        {
+          if(liveBPM<64)
+          {
+            bpmState='low';
+          }
+          else if(liveBPM>81)
+          {
+            bpmState='high';
+          }
+          else
+          {
+            bpmState='normal';
+          }
+        }
+      }
+    }
+    else if(usersGender=='Male')
+    {
+      if(usersAge<=25)
+      {
+        if(liveBPM<62)
+        {
+          bpmState='low';
+        }
+        else if(liveBPM>73)
+        {
+          bpmState='high';
+        }
+        else
+        {
+          bpmState='normal';
+        }
+      }
+      else if(usersAge>=26 && usersAge<=35)
+      {
+        {
+          if(liveBPM<62)
+          {
+            bpmState='low';
+          }
+          else if(liveBPM>73)
+          {
+            bpmState='high';
+          }
+          else
+          {
+            bpmState='normal';
+          }
+        }
+      }
+      else if(usersAge>=36 && usersAge<=45)
+      {
+        {
+          if(liveBPM<63)
+          {
+            bpmState='low';
+          }
+          else if(liveBPM>75)
+          {
+            bpmState='high';
+          }
+          else
+          {
+            bpmState='normal';
+          }
+        }
+      }
+      else if(usersAge>=46 && usersAge<=55)
+      {
+        {
+          if(liveBPM<64)
+          {
+            bpmState='low';
+          }
+          else if(liveBPM>76)
+          {
+            bpmState='high';
+          }
+          else
+          {
+            bpmState='normal';
+          }
+        }
+      }
+      else if(usersAge>=56 && usersAge<=65)
+      {
+        {
+          if(liveBPM<62)
+          {
+            bpmState='low';
+          }
+          else if(liveBPM>75)
+          {
+            bpmState='high';
+          }
+          else
+          {
+            bpmState='normal';
+          }
+        }
+      }
+      else if(usersAge>65)
+      {
+        {
+          if(liveBPM<62)
+          {
+            bpmState='low';
+          }
+          else if(liveBPM>73)
+          {
+            bpmState='high';
+          }
+          else
+          {
+            bpmState='normal';
+          }
+        }
+      }
+    }
+    if(liveSpO2<95)
+    {
+      SpO2State='Low';
+    }
 
     // void showMeasurementDialog(BuildContext context) {
     //   showDialog(
@@ -211,7 +428,7 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Color(0xFFE36E6E), // 👉 Border color
+          color:Colors.red.withOpacity(0.4),
           width: 1,
         ),
         boxShadow: [
@@ -232,7 +449,7 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
               children: [
                 Icon(CupertinoIcons.heart,color: Color(0xffE94358),),
                 SizedBox(width: 5),
-                Text("Health Metrics", style:GoogleFonts.getFont('Poppins',fontWeight: FontWeight.w500,
+                Text("Heart Rate", style:GoogleFonts.getFont('Poppins',fontWeight: FontWeight.w500,
                 ),
                   textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
                 ),
@@ -240,26 +457,32 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
             ),
 
             SizedBox(height: 5),
-            Center(
+            Padding(
+              padding: EdgeInsets.only(top: w*0.02,bottom: w*0.03),
+              child: Center(
 
 
-              child: Text(
-                "${liveBPM} Bpm",
-                style:GoogleFonts.getFont('Poppins',fontWeight: FontWeight.w500,
+                child: Text(
+                  "${liveBPM} Bpm",
+                  style:GoogleFonts.getFont('Poppins',fontWeight: FontWeight.w500,
+                  ),
+                  textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
                 ),
-                textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
               ),
             ),
 
-            Center(
-              child: Text(
-                "You have ${bpmState} Bpm",
-                style:GoogleFonts.getFont('Poppins',fontWeight: FontWeight.w500, color: CupertinoColors.inactiveGray,
-                  fontSize: 10
+            Padding(
+              padding: EdgeInsets.only(bottom: w*0.03),
+              child: Center(
+                child: Text(
+                  "You have ${bpmState} Bpm",
+                  style:GoogleFonts.getFont('Poppins',fontWeight: FontWeight.w500, color: CupertinoColors.inactiveGray,
+                    fontSize: 10
+                  ),
+                  textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
                 ),
-                textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
-              ),
 
+              ),
             ),
             Padding(
               padding: const EdgeInsets.only(top: 5),
@@ -295,6 +518,19 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
                     labelColor: Colors.blueAccent,
                   ),
                   ),
+            ),
+            Padding(
+              padding: EdgeInsets.only(bottom: w*0.05),
+              child: Center(
+                child: Text(
+                  "${SpO2State} Oxygen level",
+                  style:GoogleFonts.getFont('Poppins',fontWeight: FontWeight.w500, color: CupertinoColors.inactiveGray,
+                      fontSize: 10
+                  ),
+                  textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
+                ),
+
+              ),
             ),
 
             // Bottom Button

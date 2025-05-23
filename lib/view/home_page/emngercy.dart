@@ -34,17 +34,16 @@ class EmergencyContactCard extends StatelessWidget {
       margin: EdgeInsets.only(top: 10),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: Color.fromRGBO(255, 215, 216, 1),
-          width: 2,
+          color: Color(0xFFE36E6E),
+          width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            spreadRadius: 2,
-            blurRadius: 5,
-            offset: Offset(0, 3),
+            color: Colors.grey.withOpacity(0.1),
+            blurRadius: 8,
+            offset: Offset(0, 4),
           ),
         ],
       ),

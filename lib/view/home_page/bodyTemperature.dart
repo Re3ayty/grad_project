@@ -1,3 +1,4 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -15,14 +16,51 @@ class BodyTemperature extends StatefulWidget {
 }
 
 class _BodyTemperatureState extends State<BodyTemperature> {
+  DatabaseReference updatingCommandsHeart = FirebaseDatabase.instance.ref("commands");
+
 
   @override
   Widget build(BuildContext context) {
     String bodyTempStatus=widget.patientTempData['status'];
-    int temperatureC=widget.patientTempData['temperatureC'];
-    int temperatureF =widget.patientTempData['temperatureF'];
+    dynamic temperatureC=widget.patientTempData['temperatureC'];
+    dynamic temperatureF =widget.patientTempData['temperatureF'];
+    bool istemperatureCworking= temperatureC!=0;
+    bool istemperatureFworking= temperatureF!=0;
+    bool isCTempH= false;
+    bool isCTempL= false;
+    Color ctempColor=Colors.black;
+    if (temperatureC>=36 && temperatureC<=37.5)
+    {
+      ctempColor= Colors.green;
+    }
+    else if(temperatureC<36 && temperatureC!=0 )
+    {
+      ctempColor= Colors.blue;
+      isCTempL=true;
+
+    }
+    else if(temperatureC>37.5)
+    {
+       isCTempH= true;
+      ctempColor= Colors.red;
+
+    }
+    String measureButton='Measure';
+    bool bothTemperatureWorking= istemperatureCworking|| istemperatureFworking;
     dynamic h = MediaQuery.of(context).size.height;
     dynamic w = MediaQuery.of(context).size.width;
+    if(bothTemperatureWorking)
+    {
+      setState(() {
+        measureButton='Stop';
+      });
+    }
+    else if(!bothTemperatureWorking)
+    {
+      setState(() {
+        measureButton='Measure';
+      });
+    }
     return Container(
       margin: EdgeInsets.only(top: 10),
       decoration: BoxDecoration(
@@ -84,7 +122,7 @@ class _BodyTemperatureState extends State<BodyTemperature> {
                                     child: Text(
                                       'C',
                                       style:GoogleFonts.getFont('Poppins',fontWeight: FontWeight.w400,
-                                          fontSize: 15
+                                          fontSize: 13,
                                       ),
                                       textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
                                       overflow: TextOverflow.ellipsis,
@@ -105,9 +143,17 @@ class _BodyTemperatureState extends State<BodyTemperature> {
                                 ],
                                 alignment: Alignment.topRight),
                                 Text(
-                                  ' : ${temperatureC}',
+                                  ' : ',
                                   style:GoogleFonts.getFont('Poppins',fontWeight: FontWeight.w400,
-                                      fontSize: 15
+                                      fontSize: 13,
+                                  ),
+                                  textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  '${temperatureC}${isCTempH?' H':''}${isCTempL?' L':''}',
+                                  style:GoogleFonts.getFont('Poppins',fontWeight: FontWeight.w400,
+                                    fontSize: 13,color: ctempColor,
                                   ),
                                   textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
                                   overflow: TextOverflow.ellipsis,
@@ -127,7 +173,7 @@ class _BodyTemperatureState extends State<BodyTemperature> {
                                       child: Text(
                                         'F',
                                         style:GoogleFonts.getFont('Poppins',fontWeight: FontWeight.w400,
-                                            fontSize: 15
+                                            fontSize: 13,
                                         ),
                                         textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
                                         overflow: TextOverflow.ellipsis,
@@ -148,9 +194,17 @@ class _BodyTemperatureState extends State<BodyTemperature> {
                                     ],
                                     alignment: Alignment.topRight),
                                 Text(
-                                  ' : ${temperatureF}',
+                                  ' : ',
                                   style:GoogleFonts.getFont('Poppins',fontWeight: FontWeight.w400,
-                                      fontSize: 15
+                                      fontSize: 13,
+                                  ),
+                                  textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  '${temperatureF}${isCTempH?' H':''}${isCTempL?' L':''}',
+                                  style:GoogleFonts.getFont('Poppins',fontWeight: FontWeight.w400,
+                                    fontSize: 13,color: ctempColor,
                                   ),
                                   textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
                                   overflow: TextOverflow.ellipsis,
@@ -163,9 +217,19 @@ class _BodyTemperatureState extends State<BodyTemperature> {
                       ),
                     ),
                     ElevatedButton(
-                      onPressed: () {
-
-                      },
+                      onPressed:() async {
+                    if(!bothTemperatureWorking){
+                    await updatingCommandsHeart.update({
+                    "patientTemp": true,
+                    });
+                    // showMeasurementDialog(context);
+                    }
+                    else
+                    {
+                    await updatingCommandsHeart.update({
+                    "patientTemp": false,
+                    });
+                    }},
                       style: ElevatedButton.styleFrom(
                         backgroundColor:Color(0xffE5E4E3),
                         padding: EdgeInsets.symmetric(
@@ -175,7 +239,7 @@ class _BodyTemperatureState extends State<BodyTemperature> {
                         ),
                       ),
                       child: Text(
-                        "Measure",
+                        measureButton,
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,

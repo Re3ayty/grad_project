@@ -181,8 +181,8 @@ class _PatientDashboardState extends State<PatientDashboard> {
                             if (snapshot.hasData && snapshot.data!.snapshot.value != null) {
                               final data = snapshot.data!.snapshot.value as Map;
                               String status = data['status'] ?? 'Stopped';
-                              int temperatureC = data['temperatureC'] ?? 0.0;
-                              int temperatureF = data['temperatureF'] ?? 0.0;
+                              dynamic temperatureC = data['temperatureC'] ?? 0.0;
+                              dynamic temperatureF = data['temperatureF'] ?? 0.0;
                               return BodyTemperature(
                                 patientTempData:{
                                 'status':status,

@@ -1,3 +1,4 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -43,6 +44,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
   DateTime? startDate;
   DateTime? endDate;
   bool isOngoing = false;
+  late DatabaseReference dbRef;
   String frequency = 'Daily';
   List<String> selectedDays = [];
   bool isRunning = false;
@@ -164,6 +166,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
   @override
   void initState() {
     super.initState();
+    dbRef = FirebaseDatabase.instance.ref().child('medications');
     loadMedicineData();
     fetchUserContainerNumbers();
 

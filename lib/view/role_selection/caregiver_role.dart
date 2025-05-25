@@ -6,7 +6,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:provider/provider.dart';
-
 import '../../utils/app_routes_new.dart';
 import '../../utils/dialog_utils.dart';
 import '../../utils/responsive_text.dart';

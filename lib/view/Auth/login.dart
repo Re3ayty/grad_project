@@ -274,7 +274,7 @@ class _LogInState extends State<LogIn> {
     //   builder: (context) => Center(child: CircularProgressIndicator()),);
     //login
     try {
-      DialogUtils.showLoadingDialog(context, message: 'plz, wait...');
+      DialogUtils.showLoadingDialog(context, message: 'Please, wait...');
       await authProvider.login(email, password);
       DialogUtils.hideDialog(context);
       Navigator.pushReplacementNamed(context, AppRoutes.homePageRoute);

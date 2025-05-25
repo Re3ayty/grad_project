@@ -144,7 +144,6 @@ class _MedicineScreenState extends State<MedicineScreen>
         }
       }
     }
-
   }
   // void editMedicine(int index) {
   //   TextEditingController nameController =
@@ -353,7 +352,9 @@ class _MedicineScreenState extends State<MedicineScreen>
                               if (currentMedicines != snapshot.data!) {
                                 currentMedicines = snapshot.data!;
                               }
-                              filteredMedicines = List.from(currentMedicines);
+                              if (filteredMedicines.isEmpty) {
+                                filteredMedicines = List.from(currentMedicines);
+                              }
                             }
                             return ListView.builder(
                               itemCount: filteredMedicines.length,

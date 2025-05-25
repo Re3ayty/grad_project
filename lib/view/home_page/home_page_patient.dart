@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 import '../../utils/responsive_text.dart';
 import '../../viewModel/firbase_realtime_dao.dart';
 import '../../viewModel/provider/app_auth_provider.dart';
+import 'bodyTemperature.dart';
 import 'box_status_card.dart';
 import 'medication_reminder.dart';
 import 'emngercy.dart';
@@ -26,7 +27,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
   DatabaseReference dbRefBattery = FirebaseDatabase.instance.ref().child("battery");
   DatabaseReference dbRefBoxStatus = FirebaseDatabase.instance.ref().child("devices");
   DatabaseReference dbRefHealthMetrics = FirebaseDatabase.instance.ref().child("healthMonitor");
-
+  DatabaseReference dbRefBodyTemperature = FirebaseDatabase.instance.ref().child("patientTemp");
   // Query dbRef = FirebaseDatabase.instance.ref().child('(BOX)Hum&Temp');
   // DatabaseReference reference = FirebaseDatabase.instance.ref().child('Students');
   String getGreeting() {
@@ -196,7 +197,30 @@ class _PatientDashboardState extends State<PatientDashboard> {
                         ),
 
 
-                        SizedBox(height: 10),
+                        //////////////////////////////////
+                        StreamBuilder<DatabaseEvent>(
+                          stream: dbRefBodyTemperature.onValue,
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData && snapshot.data!.snapshot.value != null) {
+                              final data = snapshot.data!.snapshot.value as Map;
+                              String status = data['status'] ?? 'Stopped';
+                              dynamic temperatureC = data['temperatureC'] ?? 0.0;
+                              dynamic temperatureF = data['temperatureF'] ?? 0.0;
+                              return BodyTemperature(
+                                patientTempData:{
+                                'status':status,
+                                  'temperatureC':temperatureC,
+                                  'temperatureF':temperatureF
+                              },);
+                            } else if (snapshot.hasError) {
+                              return Text("Error: ${snapshot.error}");
+                            } else {
+                              return CircularProgressIndicator();
+                            }
+                          },
+                        ),
+
+
                         EmergencyContactCard(),
                       ],
                     ),

@@ -135,6 +135,7 @@ class _AnimatedCircularPercentState extends State<AnimatedCircularPercent> {
 
   void updatePercent() {
     Future.delayed(Duration(seconds: 3), () {
+      if (!mounted) return; // Check if the widget is still mounted
       setState(() {
         percent = 0.3 + Random().nextDouble() * 0.6; // Randomize for demo
       });

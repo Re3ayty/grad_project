@@ -911,6 +911,20 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                           endDate: isOngoing ? null : endDate,
                           intakeTimes: formattedIntakeTimes,
                         );
+
+                        Map<dynamic, dynamic> medication = {
+                          'container_no': containerNumber,
+                          'dose': doseAmount,
+                          'end_date':
+                              '${endDate?.day}/${endDate?.month}/${endDate?.year}',
+                          'frequency': frequency,
+                          'intake_times': formattedIntakeTimes,
+                          'med_name': medicineController.text,
+                          'ongoing': isOngoing,
+                          'start_date':
+                              '${startDate?.day}/${startDate?.month}/${startDate?.year}'
+                        };
+                        dbRef.push().set(medication);
                         // logOut();
                         Navigator.pushReplacement(
                             context,

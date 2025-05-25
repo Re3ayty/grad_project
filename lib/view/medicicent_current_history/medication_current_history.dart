@@ -31,7 +31,8 @@ class _MedicineScreenState extends State<MedicineScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-
+    fetchCurrentMedicines();
+    fetchHistoryMedicines();
     _tabController.addListener(() {
       if (_tabController.index == 0) {
         setState(() {
@@ -43,8 +44,6 @@ class _MedicineScreenState extends State<MedicineScreen>
         });
       }
     });
-    fetchCurrentMedicines();
-    fetchHistoryMedicines();
     // filterHistoryMedicines();
     // filterMedicines();
   }

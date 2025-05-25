@@ -37,10 +37,10 @@ class _PillAnimationScreenState extends State<PillAnimationScreen> {
               style: TextStyle(fontSize: 20, color: Colors.black),
               children: [
                 TextSpan(
-                    text: 'Panadol ',
+                    text: 'Place Pills ',
                     style: TextStyle(color: Color(0xff4979FB))),
                 TextSpan(
-                    text: 'in container 1',
+                    text: 'in the container',
                     style: TextStyle(fontWeight: FontWeight.bold)),
               ],
             ),
@@ -73,7 +73,7 @@ class _PillAnimationScreenState extends State<PillAnimationScreen> {
           SizedBox(height: 40),
           ElevatedButton(
             onPressed: () async {
-             if (isRunning) return; // Prevent multiple taps
+              if (isRunning) return; // Prevent multiple taps
               if (pillIndex < 4) {
                 setState(() {
                   pillIndex++;
@@ -99,9 +99,8 @@ class _PillAnimationScreenState extends State<PillAnimationScreen> {
                   Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => MedicineScreen(
-                              newMedicine: widget
-                                  .newMedicine)));
+                          builder: (context) =>
+                              MedicineScreen(newMedicine: widget.newMedicine)));
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text("Failed to add medication: $e")));

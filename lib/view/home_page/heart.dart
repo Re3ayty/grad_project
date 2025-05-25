@@ -43,8 +43,8 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
     bool bothLiveWorking= isLiveBPMworking|| isLiveSpO2working;
     String measureButton='';
     String? usersGender=authProvider.databaseUser!.gender;
-    String? userDateOfBirth=authProvider.databaseUser!.dateOfBirth;
-    int? usersAge=(DateFormat('dd-MM-yy').parse(userDateOfBirth!).year)-DateTime.now().year;
+    DateTime? userDateOfBirth=authProvider.databaseUser!.dateOfBirth;
+    int? usersAge=((userDateOfBirth!).year)-DateTime.now().year;
     if(usersGender=='Female')
     {
       if(usersAge<=25)

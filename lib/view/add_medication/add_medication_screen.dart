@@ -246,7 +246,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
           "ongoing": isOngoing,
           "frequency": frequency,
           "start_date": formattedStartDate,
-          "end_date": formattedEndDate,
+          "end_date": isOngoing ? null : formattedEndDate,
           "intake_times": formattedIntakeTimes,
         });
         ScaffoldMessenger.of(context).showSnackBar(

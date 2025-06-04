@@ -30,7 +30,7 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
   Widget build(BuildContext context) {
     var authProvider = Provider.of<AppAuthProvider>(context);
     int avgBPM = widget.healthMatrixData['avgBPM'];
-    // int avgSpO2 = widget.healthMatrixData['avgSpO2'];
+    dynamic avgSpO2 = widget.healthMatrixData['avgSpO2'];
     bool fingerPlaced = widget.healthMatrixData['fingerPlaced'];
     int liveBPM = widget.healthMatrixData['liveBPM'];
     int liveSpO2 = widget.healthMatrixData['liveSpO2'];

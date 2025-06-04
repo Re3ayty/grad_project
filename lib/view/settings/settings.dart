@@ -195,6 +195,32 @@ class _SettingsScreenPageState extends State<SettingsScreenPage> {
                   Container(
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
+                        color: Color(0xffF4F4F4)
+                    ),
+                    child: ListTile(
+                      onTap: () {
+                        Navigator.push(context,MaterialPageRoute(builder: (context) => FingerPrintScreen(),));
+                      },
+                      leading: Icon(
+                        Icons.fingerprint,
+                        color: Color(0xff4979FB),
+
+                      ),
+                      title: Text(
+                        "FingerPrint",
+                        style: GoogleFonts.getFont('Poppins',fontWeight: FontWeight.w400,
+                          // fontSize: 14,
+                        ),
+                        textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
+
+                      ),
+                      trailing: Icon(Icons.arrow_forward_ios_rounded,color: Colors.grey.shade400),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  Container(
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
                         color: Color(0xffF4F4F4)),
                     child: ListTile(
                       leading: Icon(
@@ -222,6 +248,7 @@ class _SettingsScreenPageState extends State<SettingsScreenPage> {
                       onTap: () => _showLanguageBottomSheet(context),
                     ),
                   ),
+
                   SizedBox(height: 20),
                   Container(
                     decoration: BoxDecoration(

@@ -249,6 +249,21 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
           "end_date": isOngoing ? null : formattedEndDate,
           "intake_times": formattedIntakeTimes,
         });
+        await FirebaseDatabase.instance
+            .ref()
+            .child('medications')
+            .child(widget.medicine!.id!)
+            .update({
+          'med_name': medicineController.text,
+          'dose': doseAmount,
+          'container_no': containerNumber,
+          'ongoing': isOngoing,
+          'frequency': frequency,
+          'start_date': formattedStartDate,
+          'end_date': isOngoing ? null : formattedEndDate,
+          'intake_times': formattedIntakeTimes,
+        });
+
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("Medication updated successfully!")));
         Navigator.pop(context, {
@@ -924,7 +939,60 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                           'start_date':
                               '${startDate?.day}/${startDate?.month}/${startDate?.year}'
                         };
-                        dbRef.push().set(medication);
+                        // dbRef.push().set(medication);
+                        if (uid == null) return;
+
+
+
+                        DateFormat dateFormat = DateFormat('dd/MM/yyyy');
+
+// Step 1: Add to Firestore and get the doc ID
+                        final firestoreDocRef = await MedicineDao.addMedicineAndGetDocRef(
+                          uid,
+                          {
+                            'med_name': medicineController.text,
+                            'dose': doseAmount,
+                            'container_no': containerNumber,
+                            'ongoing': isOngoing,
+                            'frequency': frequency,
+                            'start_date': startDate != null ? dateFormat.format(startDate!) : null,
+                            'end_date': endDate != null && !isOngoing ? dateFormat.format(endDate!) : null,
+                            'intake_times': formattedIntakeTimes,
+                          },
+                        );
+
+                        final String medId = firestoreDocRef.id; // ✅ use Firestore doc ID
+
+// Step 2: Create the medicine model with this ID
+                        newMedicine = MedicineUser(
+                          id: medId,
+                          medName: medicineController.text,
+                          dose: doseAmount,
+                          containerNumber: containerNumber,
+                          ongoing: isOngoing,
+                          frequency: frequency,
+                          startDate: startDate,
+                          endDate: isOngoing ? null : endDate,
+                          intakeTimes: formattedIntakeTimes,
+                        );
+
+// Step 3: Save to Realtime DB using same ID
+                        await FirebaseDatabase.instance.ref('medications').child(medId).set({
+                          'id': medId,
+                          'med_name': newMedicine!.medName,
+                          'dose': newMedicine!.dose,
+                          'container_no': newMedicine!.containerNumber,
+                          'ongoing': newMedicine!.ongoing,
+                          'frequency': newMedicine!.frequency,
+                          'start_date': newMedicine!.startDate != null
+                              ? dateFormat.format(newMedicine!.startDate!)
+                              : null,
+                          'end_date': newMedicine!.endDate != null
+                              ? dateFormat.format(newMedicine!.endDate!)
+                              : null,
+                          'intake_times': newMedicine!.intakeTimes,
+                        });
+
                         // logOut();
                         Navigator.pushReplacement(
                             context,

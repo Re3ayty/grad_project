@@ -88,8 +88,8 @@ class _PillAnimationScreenState extends State<PillAnimationScreen> {
                   isRunning = true;
                 });
                 try {
-                  await MedicineDao.addMedicineToUser(
-                      widget.uid, widget.newMedicine);
+                  // await MedicineDao.addMedicineToUser(
+                  //     widget.uid, widget.newMedicine);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('Medicine added successfully!'),

@@ -1,3 +1,4 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -99,6 +100,11 @@ class _MedicineScreenState extends State<MedicineScreen>
 
     try {
       await MedicineDao.moveMedicineToHistory(uid!, medicineId);
+      await FirebaseDatabase.instance
+          .ref()
+          .child('medications')
+          .child(medicineId)
+          .remove();
       if (!mounted) return; // Check if the widget is still mounted
       setState(() {
         currentMedicines.remove(medicineToDelete);

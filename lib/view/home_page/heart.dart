@@ -323,12 +323,7 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
         },
       );
     }
-
-    if (bothLiveWorking) {
-      setState(() {
-        measureButton = 'Stop';
-      });
-    } else if (!bothLiveWorking) {
+    if (!bothLiveWorking) {
       setState(() {
         measureButton = 'Measure';
       });
@@ -477,14 +472,10 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
                         "healthMonitor": 'START',
                       });
                       showMeasurementDialog(context);
-                    } else {
-                      await updatingCommandsHeart.update({
-                        "healthMonitor": 'STOP',
-                      });
                     }
                   },
                   child: Text(
-                    measureButton
+                    'Measure'
                     // bothLiveWorking?'STOP': "Measure"
                     ,
                     style: GoogleFonts.getFont(

@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 import '../../utils/responsive_text.dart';
 import '../../viewModel/firbase_realtime_dao.dart';
 import '../../viewModel/provider/app_auth_provider.dart';
+import '../filling/filling.dart';
 import 'bodyTemperature.dart';
 import 'box_status_card.dart';
 import 'medication_reminder.dart';
@@ -108,6 +109,16 @@ class _PatientDashboardState extends State<PatientDashboard> {
                       )),
                   icon: Icon(Icons.settings, size: 30),
                 ),
+                // IconButton(
+                //   onPressed: () => Navigator.push(
+                //       context,
+                //       MaterialPageRoute(
+                //         builder: (context) => (PillAnimationScreen(uid: uid!,
+                //           newMedicine: newMedicine!,)),
+                //       )),
+                //   icon: Icon(Icons.settings, size: 30),
+                // ),
+
               ],
             ),
 

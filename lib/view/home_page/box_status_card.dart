@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
@@ -22,6 +23,7 @@ class _BoxStatusCardState extends State<BoxStatusCard> {
     double hum = widget.boxStatusData['humidity'];
     int batteryLevel=widget.boxStatusData['percentage'];
     String boxStatus=widget.boxStatusData['status'];
+    bool isBoxCharging=widget.boxStatusData['charging'];
     dynamic h = MediaQuery.of(context).size.height;
     dynamic w = MediaQuery.of(context).size.width;
     bool highTemp= temp>=30;
@@ -105,6 +107,7 @@ class _BoxStatusCardState extends State<BoxStatusCard> {
                     color: Color.fromRGBO(83, 215, 105, 1),
                     label: "Humidity",
                     labelColor: Color.fromRGBO(83, 215, 105, 1),
+                    isBoxCharging: false,
                   ),
                 ),
                 SizedBox(width: 5),
@@ -114,6 +117,7 @@ class _BoxStatusCardState extends State<BoxStatusCard> {
                     color: Color.fromRGBO(101, 193, 223, 1),
                     label: "Battery",
                     labelColor: Color.fromRGBO(101, 193, 223, 1),
+                    isBoxCharging: isBoxCharging,
                   ),
                 ),
               ],
@@ -206,12 +210,14 @@ class AnimatedCircularPercent extends StatelessWidget {
   final String label;
   final Color labelColor;
   final double percent;
+  final bool isBoxCharging;
 
   const AnimatedCircularPercent({
     required this.percent,
     required this.color,
     required this.label,
     required this.labelColor,
+    required this.isBoxCharging,
   });
 
   @override
@@ -228,19 +234,31 @@ class AnimatedCircularPercent extends StatelessWidget {
       center: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            "${(clampedPercent * 100).toInt()}%",
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                "${(clampedPercent * 100).toInt()}%",
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+              if (isBoxCharging) ...[
+                SizedBox(width: 4),
+                Icon(CupertinoIcons.battery_charging, size: 14, color: Colors.green),
+              ],
+            ],
           ),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 10,
-              color: labelColor,
+          Align(
+            alignment: Alignment.center,
+            child: Text(
+              '${isBoxCharging ? 'Charging':'${label}'}',
+              style: TextStyle(
+                fontSize: 10,
+                color: labelColor,
+              ),
             ),
           ),
         ],

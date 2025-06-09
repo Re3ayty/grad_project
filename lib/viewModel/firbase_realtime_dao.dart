@@ -8,12 +8,14 @@ class DashboardData {
   final double humidity;
   final int batteryPercentage;
   final String status;
+  final bool charging;
 
   DashboardData({
     required this.temperature,
     required this.humidity,
     required this.batteryPercentage,
     required this.status,
+    required this.charging,
   });
 }
 
@@ -46,6 +48,7 @@ Stream<DashboardData> getCombinedDashboardStream() {
         humidity: (humAndTemp['humidity'] ?? 0).toDouble(),
         batteryPercentage: (battery['percentage'] ?? 0).toInt(),
         status: deviceStatus['status'] ?? 'offline',
+        charging: battery['charging'] ?? false
       );
     },
   );

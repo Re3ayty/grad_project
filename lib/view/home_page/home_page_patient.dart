@@ -197,6 +197,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
                                   'humidity': data.humidity,
                                   'percentage': data.batteryPercentage,
                                   'status': data.status,
+                                  'charging':data.charging
                                 },
                               );
                             } else if (snapshot.hasError) {

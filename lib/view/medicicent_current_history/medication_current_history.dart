@@ -485,8 +485,10 @@ class _MedicineScreenState extends State<MedicineScreen>
         // onPressed: addMedicine,
         child: Icon(
           Icons.add,
+          color: Colors.white,
         ),
-        backgroundColor: Color(0xff4979FB).withOpacity(0.9),
+        backgroundColor: Color(0xff4979FB),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
       ),
     );
   }

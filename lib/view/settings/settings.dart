@@ -201,13 +201,15 @@ class _SettingsScreenPageState extends State<SettingsScreenPage> {
                       onTap: () {
                         Navigator.push(context,MaterialPageRoute(builder: (context) => FingerPrintScreen(),));
                       },
-                      leading: Icon(
-                        Icons.fingerprint,
-                        color: Color(0xff4979FB),
-
-                      ),
+                      leading:
+                          ImageIcon(AssetImage("assets/Images/_icons.png"),color: Color(0xff4979FB),),
+                      // Icon(
+                      //   emergency
+                      //   color: Color(0xff4979FB),
+                      //
+                      // ),
                       title: Text(
-                        "FingerPrint",
+                        "Emergency",
                         style: GoogleFonts.getFont('Poppins',fontWeight: FontWeight.w400,
                           // fontSize: 14,
                         ),

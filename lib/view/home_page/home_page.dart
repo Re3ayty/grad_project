@@ -1,7 +1,9 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import '../../utils/responsive_text.dart';
 import '../../viewModel/provider/app_auth_provider.dart';
 import '../alerts/alerts_screen.dart';
 import '../chatBot/chatBot.dart';
@@ -32,10 +34,11 @@ class _HomePageState extends State<HomePage> {
     var authProvider = Provider.of<AppAuthProvider>(context);
     Size size = MediaQuery.of(context).size;
     return Scaffold(
+
         backgroundColor: Colors.white,
       // drawer: DrawerWidget(),
         bottomNavigationBar: BottomNavigationBar(
-          selectedItemColor: Colors.blueAccent,
+          selectedItemColor: Color(0xff4979FB),
             unselectedItemColor: Colors.grey,
           showUnselectedLabels: false,
           onTap: (index) {
@@ -47,7 +50,7 @@ class _HomePageState extends State<HomePage> {
           items:const [
           BottomNavigationBarItem(icon: Icon(Icons.home,), label: "Home" ),
           BottomNavigationBarItem(icon: Icon(Icons.medical_services), label: "Medication"),
-          BottomNavigationBarItem(icon: Icon(Icons.notifications), label: "Notifications"),
+          BottomNavigationBarItem(icon: Icon(Icons.history), label: "Vitals History"),
           BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_outline), label: "Assistant"),
           ],
         ),

@@ -10,7 +10,7 @@ import 'package:provider/provider.dart';
 
 import '../../utils/responsive_text.dart';
 import '../../viewModel/provider/app_auth_provider.dart';
-import 'history_screen.dart';
+import 'old_history_heartrate_screen.dart';
 
 class HealthMetricsCard extends StatefulWidget {
   Map<String, dynamic> healthMatrixData;

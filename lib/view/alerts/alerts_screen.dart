@@ -1,7 +1,12 @@
 
 import 'package:flutter/material.dart';
 
-class AlertsScreen extends StatelessWidget {
+class AlertsScreen extends StatefulWidget {
+  @override
+  State<AlertsScreen> createState() => _AlertsScreenState();
+}
+
+class _AlertsScreenState extends State<AlertsScreen> {
   final List<AlertItem> alerts = [
     AlertItem(
       title: '2 missed doses',

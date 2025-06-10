@@ -12,6 +12,7 @@ import '../../../../utils/dialog_utils.dart';
 import '../../../../viewModel/provider/app_auth_provider.dart';
 import '../../utils/responsive_text.dart';
 import '../Auth/login.dart';
+import 'emergency_settings_page.dart';
 import 'finger_Print_page.dart';
 
 class SettingsScreenPage extends StatefulWidget {
@@ -199,7 +200,7 @@ class _SettingsScreenPageState extends State<SettingsScreenPage> {
                     ),
                     child: ListTile(
                       onTap: () {
-                        Navigator.push(context,MaterialPageRoute(builder: (context) => FingerPrintScreen(),));
+                        Navigator.push(context,MaterialPageRoute(builder: (context) => EmergencySettingsPage(),));
                       },
                       leading:
                           ImageIcon(AssetImage("assets/Images/_icons.png"),color: Color(0xff4979FB),),

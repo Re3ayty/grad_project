@@ -4,6 +4,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hcs_grad_project/model/heart_rate_readings.dart';
 import 'package:intl/intl.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:provider/provider.dart';
@@ -11,6 +12,7 @@ import 'package:provider/provider.dart';
 import '../../utils/responsive_text.dart';
 import '../../viewModel/provider/app_auth_provider.dart';
 import 'history_screen.dart';
+import '../../viewModel/firbase_realtime_dao.dart';
 
 class HealthMetricsCard extends StatefulWidget {
   Map<String, dynamic> healthMatrixData;
@@ -30,7 +32,7 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
   Widget build(BuildContext context) {
     var authProvider = Provider.of<AppAuthProvider>(context);
     int avgBPM = widget.healthMatrixData['avgBPM'];
-    // int avgSpO2 = widget.healthMatrixData['avgSpO2'];
+    int avgSpO2 = widget.healthMatrixData['avgSpO2'];
     bool fingerPlaced = widget.healthMatrixData['fingerPlaced'];
     int liveBPM = widget.healthMatrixData['liveBPM'];
     int liveSpO2 = widget.healthMatrixData['liveSpO2'];
@@ -277,6 +279,17 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
                     if (timer.isActive) timer.cancel();
                     dialogClosed = true;
                     Navigator.of(context).pop();
+
+                    final uid =
+                        Provider.of<AppAuthProvider>(context, listen: false)
+                            .firebaseAuthUser!
+                            .uid;
+                    final boxData = HeartRateData(
+                      avgBPM: widget.healthMatrixData['avgBPM'],
+                      avgSpO2: widget.healthMatrixData['avgSpO2'],
+                      lastUpdated: DateTime.now(),
+                    );
+                    MedicationBoxDao.addVitalsToUser(uid, boxData);
                   }
                 });
               }
@@ -481,6 +494,18 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
                       await updatingCommandsHeart.update({
                         "healthMonitor": 'STOP',
                       });
+                      final uid =
+                          Provider.of<AppAuthProvider>(context, listen: false)
+                              .firebaseAuthUser!
+                              .uid;
+                      final boxData = HeartRateData(
+                        avgBPM: (widget.healthMatrixData['avgBPM'] as num?)
+                            ?.toInt(),
+                        avgSpO2: (widget.healthMatrixData['avgSpO2'] as num?)
+                            ?.toInt(),
+                        lastUpdated: DateTime.now(),
+                      );
+                      MedicationBoxDao.addVitalsToUser(uid, boxData);
                     }
                   },
                   child: Text(

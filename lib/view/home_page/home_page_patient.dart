@@ -234,7 +234,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
                       if (snapshot.hasData && snapshot.data!.snapshot.value != null) {
                         final data = snapshot.data!.snapshot.value as Map;
                         int avgBPM = data['avgBPM'] ?? 0;
-                        // int avgSpO2 = data['avgSpO2'] ?? 0.0;
+                        int avgSpO2 = data['avgSpO2'] ?? 0.0;
                         bool fingerPlaced = data['fingerPlaced'] ?? false;
                         int liveBPM = data['liveBPM'] ?? 0;
                         int liveSpO2= data['liveSpO2'] ?? 0;
@@ -244,7 +244,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
                         return HealthMetricsCard(
                           healthMatrixData:{
                             'avgBPM': avgBPM,
-                            // 'avgSpO2': avgSpO2,
+                            'avgSpO2': avgSpO2,
                             'fingerPlaced': fingerPlaced,
                             'liveBPM': liveBPM,
                             'liveSpO2': liveSpO2,

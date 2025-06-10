@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:rxdart/rxdart.dart';
-import '../model/medication_box_data.dart';
+import '../model/heart_rate_readings.dart';
+import '../model/body_temp_readings.dart';
+import '../model/fingerprints.dart';
 
 class DashboardData {
   final double temperature;
@@ -55,52 +57,94 @@ class MedicationBoxDao {
   static CollectionReference<Map<String, dynamic>> getMedicationBoxCollection(
       String uid) {
     var db = FirebaseFirestore.instance;
-    return db.collection('usersInfo').doc(uid).collection('vitals');
+    return db.collection('usersInfo').doc(uid).collection('heartRate_readings');
   }
 
-  static Future<void> addVitalsToUser(String uid, MedicationBoxData boxData) {
-    var vitalsCollection = getMedicationBoxCollection(uid);
-    return vitalsCollection.add(boxData.toFireStore());
+  static Future<void> addVitalsToUser(String uid, HeartRateData boxData) {
+    var heartRateCollection = getMedicationBoxCollection(uid);
+    return heartRateCollection.add(boxData.toFireStore());
   }
 
-  static Future<List<MedicationBoxData>> getMedicationData(String uid) async {
-    var vitalsCollection = getMedicationBoxCollection(uid);
-    var snapshot = await vitalsCollection.get();
+  static Future<List<HeartRateData>> getMedicationData(String uid) async {
+    var heartRateCollection = getMedicationBoxCollection(uid);
+    var snapshot = await heartRateCollection.get();
     return snapshot.docs
-        .map((doc) => MedicationBoxData.fromFireStore(doc.id, doc.data()))
+        .map((doc) => HeartRateData.fromFireStore(doc.id, doc.data()))
         .toList();
-  }
-
-  static Future<List<MedicationBoxData>> getHistoryVitalsForUser(
-      String uid) async {
-    var historyVitalsCollection = FirebaseFirestore.instance
-        .collection('usersInfo')
-        .doc(uid)
-        .collection('vitals_history');
-    var snapshot = await historyVitalsCollection.get();
-    return snapshot.docs
-        .map((doc) => MedicationBoxData.fromFireStore(doc.id, doc.data()))
-        .toList();
-  }
-
-  static Future<void> moveVitalsToHistory(String uid, String vitalsID) async {
-    var vitalsCollection = getMedicationBoxCollection(uid);
-    var docRef = vitalsCollection.doc(vitalsID);
-    var docSnapshot = await docRef.get();
-
-    if (docSnapshot.exists) {
-      var historyVitalsCollection = FirebaseFirestore.instance
-          .collection('usersInfo')
-          .doc(uid)
-          .collection('vitals_history');
-      await historyVitalsCollection.doc(vitalsID).set(docSnapshot.data()!);
-      await docRef.delete();
-    }
   }
 
   static Future<void> deleteVitalsForUser(String uid, String vitalsId) async {
-    var vitalsCollection = getMedicationBoxCollection(uid);
-    var docRef = vitalsCollection.doc(vitalsId);
+    var heartRateCollection = getMedicationBoxCollection(uid);
+    var docRef = heartRateCollection.doc(vitalsId);
     await docRef.delete();
+  }
+}
+
+class BodyTempDao {
+  static CollectionReference<Map<String, dynamic>> getBodyTempCollection(
+      String uid) {
+    var db = FirebaseFirestore.instance;
+    return db.collection('usersInfo').doc(uid).collection('bodyTemp_readings');
+  }
+
+  static Future<void> addBodyTempToUser(
+      String uid, BodyTempReadings bodyTempData) {
+    var bodyTempCollection = getBodyTempCollection(uid);
+    return bodyTempCollection.add(bodyTempData.toFireStore());
+  }
+
+  static Future<List<BodyTempReadings>> getBodyTempData(String uid) async {
+    var bodyTempCollection = getBodyTempCollection(uid);
+    var snapshot = await bodyTempCollection.get();
+    return snapshot.docs
+        .map((doc) => BodyTempReadings.fromFireStore(doc.id, doc.data()))
+        .toList();
+  }
+
+  static Future<void> deleteBodyTempForUser(
+      String uid, String bodyTempId) async {
+    var bodyTempCollection = getBodyTempCollection(uid);
+    var docRef = bodyTempCollection.doc(bodyTempId);
+    await docRef.delete();
+  }
+}
+
+class FingerprintDao {
+  static CollectionReference<Map<String, dynamic>> getFingerprintCollection(
+      String uid) {
+    var db = FirebaseFirestore.instance;
+    return db.collection('usersInfo').doc(uid).collection('fingerprints');
+  }
+
+  static Future<void> addFingerprintToUser(
+      String uid, FingerPrintsData fingerprintData) {
+    var fingerprintCollection = getFingerprintCollection(uid);
+    return fingerprintCollection.add(fingerprintData.toFireStore());
+  }
+
+  static Future<List<FingerPrintsData>> getFingerprintData(String uid) async {
+    var fingerprintCollection = getFingerprintCollection(uid);
+    var snapshot = await fingerprintCollection.get();
+    return snapshot.docs
+        .map((doc) => FingerPrintsData.fromFireStore(doc.id, doc.data()))
+        .toList();
+  }
+
+  static Future<void> deleteFingerprintForUser(
+      String uid, String fingerprintId) async {
+    var fingerprintCollection = getFingerprintCollection(uid);
+    var docRef = fingerprintCollection.doc(fingerprintId);
+    await docRef.delete();
+  }
+
+   static Future<List<int>> getUsedIDs(String uid) async {
+    var fingerprintCollection = getFingerprintCollection(uid);
+    var querySnapshot = await fingerprintCollection.get();
+
+    return querySnapshot.docs
+        .map((doc) =>
+            int.tryParse(doc.data()['container_no']?.toString() ?? '') ?? 0)
+        .where((num) => num >= 1 && num <= 4)
+        .toList();
   }
 }

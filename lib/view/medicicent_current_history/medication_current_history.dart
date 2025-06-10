@@ -559,15 +559,28 @@ class MedicineCard extends StatelessWidget {
                           builder: (BuildContext context) {
 
                             return AlertDialog(
-                              title: Text("Confirm Delete"),
+                              title: Center(
+                                child: Text("Confirm Delete",style: GoogleFonts.getFont('Poppins',fontWeight: FontWeight.w500
+                                  // fontSize: 14,
+                                ),
+                                  textAlign: TextAlign.center,
+                                  textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
+
+                                ),
+                              ),
                               content: Text(
-                                  "Are you sure you want to delete this medicine?"),
+                                  "Are you sure you want to delete this medication?"),
                               actions: [
                                 TextButton(
                                     onPressed: () {
                                       Navigator.of(context).pop();
                                     },
-                                    child: Text("Cancel")),
+                                    child: Text("Cancel",style: GoogleFonts.getFont('Poppins',fontWeight: FontWeight.w400,color: Colors.black
+                                      // fontSize: 14,
+                                    ),
+                                      textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
+
+                                    ),),
                                 TextButton(
                                     onPressed: () {
                                       Navigator.of(context).pop();
@@ -576,9 +589,12 @@ class MedicineCard extends StatelessWidget {
                                       }
                                     },
                                     child: Text(
-                                      "Delete",
-                                      style: TextStyle(color: Colors.red),
-                                    ))
+                                      "Delete",style: GoogleFonts.getFont('Poppins',fontWeight: FontWeight.w400,color: Colors.red
+                                      // fontSize: 14,
+                                    ),
+                                      textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
+
+                                    ),),
                               ],
                             );
                           });

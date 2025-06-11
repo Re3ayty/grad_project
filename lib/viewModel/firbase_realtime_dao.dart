@@ -131,20 +131,30 @@ class FingerprintDao {
   }
 
   static Future<void> deleteFingerprintForUser(
-      String uid, String fingerprintId) async {
+      String uid, String docID) async {
     var fingerprintCollection = getFingerprintCollection(uid);
-    var docRef = fingerprintCollection.doc(fingerprintId);
+    var docRef = fingerprintCollection.doc(docID);
     await docRef.delete();
   }
 
-   static Future<List<int>> getUsedIDs(String uid) async {
+  static Future<List<int>> getUsedIDs(String uid) async {
     var fingerprintCollection = getFingerprintCollection(uid);
     var querySnapshot = await fingerprintCollection.get();
 
     return querySnapshot.docs
-        .map((doc) =>
-            int.tryParse(doc.data()['container_no']?.toString() ?? '') ?? 0)
-        .where((num) => num >= 1 && num <= 4)
+        .map((doc) => int.tryParse(doc.data()['id']?.toString() ?? '') ?? 0)
+        .where((num) => num >= 1 && num <= 127)
         .toList();
+  }
+
+  static Stream<List<FingerPrintsData>> getFingerprintsStream(String uid) {
+    return FirebaseFirestore.instance
+        .collection('usersInfo')
+        .doc(uid)
+        .collection('fingerprints')
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => FingerPrintsData.fromFireStore(doc.id, doc.data()))
+            .toList());
   }
 }

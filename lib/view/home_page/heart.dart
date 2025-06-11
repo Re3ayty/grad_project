@@ -279,11 +279,14 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
                     if (timer.isActive) timer.cancel();
                     dialogClosed = true;
                     Navigator.of(context).pop();
-
-                    final uid =
-                        Provider.of<AppAuthProvider>(context, listen: false)
-                            .firebaseAuthUser!
-                            .uid;
+                  }
+                });
+                if (liveBPM == 0 && avgBPM != 0) {
+                  final uid =
+                      Provider.of<AppAuthProvider>(context, listen: false)
+                          .firebaseAuthUser
+                          ?.uid;
+                  if (uid != null) {
                     final boxData = HeartRateData(
                       avgBPM: widget.healthMatrixData['avgBPM'],
                       avgSpO2: widget.healthMatrixData['avgSpO2'],
@@ -291,7 +294,7 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
                     );
                     MedicationBoxDao.addVitalsToUser(uid, boxData);
                   }
-                });
+                }
               }
 
               // Only start polling once
@@ -494,18 +497,6 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
                       await updatingCommandsHeart.update({
                         "healthMonitor": 'STOP',
                       });
-                      final uid =
-                          Provider.of<AppAuthProvider>(context, listen: false)
-                              .firebaseAuthUser!
-                              .uid;
-                      final boxData = HeartRateData(
-                        avgBPM: (widget.healthMatrixData['avgBPM'] as num?)
-                            ?.toInt(),
-                        avgSpO2: (widget.healthMatrixData['avgSpO2'] as num?)
-                            ?.toInt(),
-                        lastUpdated: DateTime.now(),
-                      );
-                      MedicationBoxDao.addVitalsToUser(uid, boxData);
                     }
                   },
                   child: Text(

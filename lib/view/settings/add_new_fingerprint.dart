@@ -26,12 +26,29 @@ class _AddNewFingerprintState extends State<AddNewFingerprint> {
   Color _iconColor = const Color(0xff4979FB);
   bool _hasHandledSuccess = false;
   String? _lastStatus;
+  List<int> usedIDs = [];
 
   @override
   void dispose() {
     fingerprintNameController.dispose();
     fingerprintIDController.dispose();
     super.dispose();
+  }
+
+  void fetchUsedIDs() async {
+    final uid = Provider.of<AppAuthProvider>(context, listen: false)
+        .firebaseAuthUser!
+        .uid;
+    List<int> IDs = await FingerprintDao.getUsedIDs(uid);
+    setState(() {
+      usedIDs = IDs;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUsedIDs();
   }
 
   Future<void> _startEnrollment() async {
@@ -44,6 +61,12 @@ class _AddNewFingerprintState extends State<AddNewFingerprint> {
     final idText = fingerprintIDController.text.trim();
     if (idText.isEmpty) {
       _showSnackbar('Please enter a fingerprint ID', Colors.red);
+      return;
+    }
+
+    final id = int.tryParse(idText);
+    if (usedIDs.contains(id)) {
+      _showSnackbar("ID already used. Pick another ID", Colors.red);
       return;
     }
 

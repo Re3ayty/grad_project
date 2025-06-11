@@ -292,6 +292,9 @@ class _PillAnimationScreenState extends State<PillAnimationScreen> {
     DateTime(now.year, now.month, now.day, time.hour, time.minute);
     return DateFormat('HH:mm').format(dateTime);
   }
+  final updatingCommandsSyncMedication =
+  FirebaseDatabase.instance.ref("commands");
+
   DatabaseReference updatingRefill = FirebaseDatabase.instance.ref("refill");
   int pillIndexDisplay = 0;
   bool isRunning = false;
@@ -479,6 +482,9 @@ class _PillAnimationScreenState extends State<PillAnimationScreen> {
                       ? dateFormat.format(widget.newMedicine.endDate!)
                       : null,
                   'intake_times': widget.newMedicine.intakeTimes,
+                });
+                await updatingCommandsSyncMedication.update({
+                  "syncMedication": true,
                 });
                   // await MedicineDao.addMedicineToUser(
                   //     widget.uid, widget.newMedicine);

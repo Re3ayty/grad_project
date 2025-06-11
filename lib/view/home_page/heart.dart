@@ -456,16 +456,37 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
                 ),
               ),
             ),
-
+            SizedBox(
+              height: 20,
+            ),
             // Bottom Button
             Center(
               child: Container(
-                width: w * 0.4,
-                height: w * 0.05,
-                child: ElevatedButton(
-                  style: ButtonStyle(
-                      backgroundColor:
-                          MaterialStatePropertyAll(Color(0xffE5E4E3))),
+                width: 200,
+                height:50,
+                child: bothLiveWorking?Center(
+                  child: Text(
+                    'Remove your finger to stop'
+                    // bothLiveWorking?'STOP': "Measure"
+                    ,
+                    style: GoogleFonts.getFont(
+                      'Poppins',
+                      fontWeight: FontWeight.w500,
+                      fontSize: 12,
+                      color: Colors.red.withOpacity(0.4),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ):
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: Color(0xffE5E4E3),
+                      padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),),
+                      // backgroundColor:
+                      //     MaterialStatePropertyAll(Color(0xffE5E4E3))),
                   onPressed: () async {
                     if (!bothLiveWorking) {
                       await updatingCommandsHeart.update({
@@ -487,24 +508,24 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
                 ),
               ),
             ),
-            Center(
-              child: TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => HistoryScreen()));
-                  },
-                  child: Text(
-                    'Measure Log',
-                    style: GoogleFonts.getFont('Poppins',
-                        fontWeight: FontWeight.w500,
-                        fontSize: 12,
-                        color: Color(0xff98A2B3)),
-                    textScaler:
-                        TextScaler.linear(ScaleSize.textScaleFactor(context)),
-                  )),
-            )
+            // Center(
+            //   child: TextButton(
+            //       onPressed: () {
+            //         Navigator.push(
+            //             context,
+            //             MaterialPageRoute(
+            //                 builder: (context) => HistoryScreen()));
+            //       },
+            //       child: Text(
+            //         'Measure Log',
+            //         style: GoogleFonts.getFont('Poppins',
+            //             fontWeight: FontWeight.w500,
+            //             fontSize: 12,
+            //             color: Color(0xff98A2B3)),
+            //         textScaler:
+            //             TextScaler.linear(ScaleSize.textScaleFactor(context)),
+            //       )),
+            // )
           ],
         ),
       ),

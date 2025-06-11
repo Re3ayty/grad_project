@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -639,52 +641,138 @@ class MedicineCard extends StatelessWidget {
                   //
                   //   child: Icon(Icons.replay_circle_filled, color:Colors.green),
                   // ),
-                  GestureDetector(
-                    onTap: () async {
-                      var authProvider = Provider.of<AppAuthProvider>(context, listen: false);
-                      String? uid = authProvider.firebaseAuthUser?.uid;
-                      if (uid == null) return;
+                  FutureBuilder<DocumentSnapshot>(
+                    future: FirebaseFirestore.instance
+                        .collection('usersInfo')
+                        .doc(FirebaseAuth.instance.currentUser!.uid)
+                        .collection('medication_to_take')
+                        .doc(medicine!.medName!)
+                        .get(),
+                    builder: (context, firestoreSnapshot) {
+                      if (!firestoreSnapshot.hasData || !firestoreSnapshot.data!.exists) {
+                        return Icon(Icons.replay_circle_filled, color: Colors.grey); // default
+                      }
 
-                      await refillData.update({
-                        "request": '${medicine?.containerNumber}[1,2,3,4]',
-                      });
+                      int dose = int.tryParse(firestoreSnapshot.data!.get('dose').toString()) ?? 1;
 
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => StreamBuilder<DatabaseEvent>(
-                            stream: refillData.onValue,
-                            builder: (context, snapshot) {
-                              if (snapshot.hasData && snapshot.data!.snapshot.value != null) {
-                                final data = snapshot.data!.snapshot.value as Map;
-                                int slot = data['slot'] ?? 0;
-                                bool confirm = data['confirm'] ?? false;
-                                String state = data['state'] ?? 'complete';
-                                String request = data['request']?.toString() ?? 'processed';
+                      return FutureBuilder<DatabaseEvent>(
+                        future: FirebaseDatabase.instance
+                            .ref()
+                            .child('missedmed')
+                            .child(medicine!.medName!)
+                            .once(),
+                        builder: (context, rtSnapshot) {
+                          bool shouldRefill = false;
 
-                                return PillAnimationScreen(
-                                  uid: uid,
-                                  newMedicine: medicine!,
-                                  isRefill: true,
-                                  refillDatafromRealTime: {
-                                    'slot': slot,
-                                    'confirm': confirm,
-                                    'state': state,
-                                    'request': request,
-                                  },
-                                );
-                              } else {
-                                return Scaffold(
-                                  body: Center(child: CircularProgressIndicator()),
-                                );
-                              }
-                            },
-                          ),
-                        ),
+                          if (rtSnapshot.hasData && rtSnapshot.data!.snapshot.value != null) {
+                            final data = rtSnapshot.data!.snapshot.value as Map<dynamic, dynamic>;
+
+                            int acknowledgedCount = data.values
+                                .where((value) => value.toString().toLowerCase() == 'acknowledged')
+                                .length;
+
+                            int maxAcks = (4 / dose).ceil();
+
+                            if (acknowledgedCount >= maxAcks) {
+                              shouldRefill = true;
+                            }
+                          }
+
+                          return GestureDetector(
+                            onTap: shouldRefill
+                                ? () async {
+                              var authProvider = Provider.of<AppAuthProvider>(context, listen: false);
+                              String? uid = authProvider.firebaseAuthUser?.uid;
+                              if (uid == null) return;
+
+                              await refillData.update({
+                                "request": '${medicine?.containerNumber}[1,2,3,4]',
+                              });
+
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => StreamBuilder<DatabaseEvent>(
+                                    stream: refillData.onValue,
+                                    builder: (context, snapshot) {
+                                      if (snapshot.hasData && snapshot.data!.snapshot.value != null) {
+                                        final data = snapshot.data!.snapshot.value as Map;
+                                        return PillAnimationScreen(
+                                          uid: uid,
+                                          newMedicine: medicine!,
+                                          isRefill: true,
+                                          refillDatafromRealTime: {
+                                            'slot': data['slot'],
+                                            'confirm': data['confirm'],
+                                            'state': data['state'],
+                                            'request': data['request'],
+                                          },
+                                        );
+                                      } else {
+                                        return Scaffold(body: Center(child: CircularProgressIndicator()));
+                                      }
+                                    },
+                                  ),
+                                ),
+                              );
+                            }
+                                : null,
+                            child: Icon(
+                              Icons.replay_circle_filled,
+                              color: shouldRefill ? Colors.green : Colors.grey,
+                            ),
+                          );
+                        },
                       );
                     },
-                    child: Icon(Icons.replay_circle_filled, color: Colors.green),
                   ),
+
+                  // GestureDetector(
+                  //   onTap: () async {
+                  //     var authProvider = Provider.of<AppAuthProvider>(context, listen: false);
+                  //     String? uid = authProvider.firebaseAuthUser?.uid;
+                  //     if (uid == null) return;
+                  //
+                  //     await refillData.update({
+                  //       "request": '${medicine?.containerNumber}[1,2,3,4]',
+                  //     });
+                  //
+                  //     Navigator.push(
+                  //       context,
+                  //       MaterialPageRoute(
+                  //         builder: (context) => StreamBuilder<DatabaseEvent>(
+                  //           stream: refillData.onValue,
+                  //           builder: (context, snapshot) {
+                  //             if (snapshot.hasData && snapshot.data!.snapshot.value != null) {
+                  //               final data = snapshot.data!.snapshot.value as Map;
+                  //               int slot = data['slot'] ?? 0;
+                  //               bool confirm = data['confirm'] ?? false;
+                  //               String state = data['state'] ?? 'complete';
+                  //               String request = data['request']?.toString() ?? 'processed';
+                  //
+                  //               return PillAnimationScreen(
+                  //                 uid: uid,
+                  //                 newMedicine: medicine!,
+                  //                 isRefill: true,
+                  //                 refillDatafromRealTime: {
+                  //                   'slot': slot,
+                  //                   'confirm': confirm,
+                  //                   'state': state,
+                  //                   'request': request,
+                  //                 },
+                  //               );
+                  //             } else {
+                  //               return Scaffold(
+                  //                 body: Center(child: CircularProgressIndicator()),
+                  //               );
+                  //             }
+                  //           },
+                  //         ),
+                  //       ),
+                  //     );
+                  //   },
+                  //   child: Icon(Icons.replay_circle_filled, color: Colors.green),
+                  // ),
 
                 ],
               ),

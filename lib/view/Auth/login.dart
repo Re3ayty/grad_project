@@ -180,47 +180,47 @@ class _LogInState extends State<LogIn> {
                         ],
                       ),
 
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            width: w*0.4,
-                            color: Color(0xffE5E7EB),
-                            height: 2,
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text('OR',style:GoogleFonts.getFont('Inter',fontWeight: FontWeight.w500,
-                                color: Color(0xff717784)
-                            ),textAlign: TextAlign.center,
-                              textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
-                            ),
-                          ),
-                          Container(
-                            width: w*0.4,
-                            color: Color(0xffE5E7EB),
-                            height: 2,
-                          ),
-
-
-                        ],
-                      ),
-                      ElevatedButton(
-                        style: ButtonStyle(backgroundColor:MaterialStatePropertyAll(Colors.white)),
-                        onPressed: () async {
-                          await signInWithFacebook();
-                          },
-                                    child: Row(
-                                      children: [
-                                        Icon(Icons.facebook,color: Colors.blue.shade700 ,),
-                                        Expanded(child: Center(child: Text('Sign in with Facebook',style:GoogleFonts.getFont('Inter',fontWeight: FontWeight.w600,
-                                            color: Color(0xff101623)
-                                        ),textAlign: TextAlign.center,
-                                          textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
-                                        ),)),
-                                      ],
-                                    ),
-                                  ),
+                      // Row(
+                      //   mainAxisAlignment: MainAxisAlignment.center,
+                      //   children: [
+                      //     Container(
+                      //       width: w*0.4,
+                      //       color: Color(0xffE5E7EB),
+                      //       height: 2,
+                      //     ),
+                      //     Padding(
+                      //       padding: const EdgeInsets.all(8.0),
+                      //       child: Text('OR',style:GoogleFonts.getFont('Inter',fontWeight: FontWeight.w500,
+                      //           color: Color(0xff717784)
+                      //       ),textAlign: TextAlign.center,
+                      //         textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
+                      //       ),
+                      //     ),
+                      //     Container(
+                      //       width: w*0.4,
+                      //       color: Color(0xffE5E7EB),
+                      //       height: 2,
+                      //     ),
+                      //
+                      //
+                      //   ],
+                      // ),
+                      // ElevatedButton(
+                      //   style: ButtonStyle(backgroundColor:MaterialStatePropertyAll(Colors.white)),
+                      //   onPressed: () async {
+                      //     await signInWithFacebook();
+                      //     },
+                      //               child: Row(
+                      //                 children: [
+                      //                   Icon(Icons.facebook,color: Colors.blue.shade700 ,),
+                      //                   Expanded(child: Center(child: Text('Sign in with Facebook',style:GoogleFonts.getFont('Inter',fontWeight: FontWeight.w600,
+                      //                       color: Color(0xff101623)
+                      //                   ),textAlign: TextAlign.center,
+                      //                     textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
+                      //                   ),)),
+                      //                 ],
+                      //               ),
+                      //             ),
 
                     ],
                   ),

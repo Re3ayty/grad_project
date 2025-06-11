@@ -6,6 +6,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hcs_grad_project/view/home_page/treatment_progress_caregiver.dart';
 import 'package:hcs_grad_project/view/settings/settings.dart';
 import 'package:provider/provider.dart';
 import '../../utils/responsive_text.dart';
@@ -13,6 +14,7 @@ import '../../viewModel/firbase_realtime_dao.dart';
 import '../../viewModel/provider/app_auth_provider.dart';
 import '../alerts/alerts_screen.dart';
 import '../filling/filling.dart';
+import 'Medication_Reminder_History.dart';
 import 'bodyTemperature.dart';
 import 'box_status_card.dart';
 import 'medication_reminder.dart';
@@ -486,6 +488,10 @@ class _PatientDashboardState extends State<PatientDashboard> {
               ),
       
               SizedBox(height: 20),
+              authProvider.databaseUser!.patientOrCaregiver! == "Cargiver" ?Padding(
+                padding: const EdgeInsets.only(top: 8,bottom: 8),
+                child: PatientTreatmentProgress(),
+              ):Text(''),
               MedicationReminder(),
               SizedBox(height: 20),
       

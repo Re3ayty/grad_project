@@ -2,6 +2,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hcs_grad_project/view/home_page/vital_sign_history.dart';
 import 'package:provider/provider.dart';
 import '../../utils/responsive_text.dart';
 import '../../viewModel/provider/app_auth_provider.dart';
@@ -18,13 +19,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
 
   int bottom_navigation_bar_index=0;
-  List<Widget> screenList=
-  [
-    PatientDashboard(),
-    MedicineScreen(),
-    AlertsScreen(),
-    ChatBot(),
-  ];
+
   @override
   Widget build(BuildContext context) {
     return initScreen();
@@ -32,6 +27,13 @@ class _HomePageState extends State<HomePage> {
 
   Widget initScreen() {
     var authProvider = Provider.of<AppAuthProvider>(context);
+    List<Widget> screenList=
+    [
+      PatientDashboard(),
+      MedicineScreen(),
+      HeartRateHistoryApp(),
+      Geminichatbot(appUser: authProvider.databaseUser!),
+    ];
     Size size = MediaQuery.of(context).size;
     return Scaffold(
 

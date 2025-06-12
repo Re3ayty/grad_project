@@ -1,7 +1,10 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:hcs_grad_project/view/home_page/vital_sign_history.dart';
 import 'package:provider/provider.dart';
+import '../../utils/responsive_text.dart';
 import '../../viewModel/provider/app_auth_provider.dart';
 import '../alerts/alerts_screen.dart';
 import '../chatBot/chatBot.dart';
@@ -16,13 +19,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
 
   int bottom_navigation_bar_index=0;
-  List<Widget> screenList=
-  [
-    PatientDashboard(),
-    MedicineScreen(),
-    AlertsScreen(),
-    ChatBot(),
-  ];
+
   @override
   Widget build(BuildContext context) {
     return initScreen();
@@ -30,12 +27,20 @@ class _HomePageState extends State<HomePage> {
 
   Widget initScreen() {
     var authProvider = Provider.of<AppAuthProvider>(context);
+    List<Widget> screenList=
+    [
+      PatientDashboard(),
+      MedicineScreen(),
+      HeartRateHistoryApp(),
+      Geminichatbot(appUser: authProvider.databaseUser!),
+    ];
     Size size = MediaQuery.of(context).size;
     return Scaffold(
+
         backgroundColor: Colors.white,
       // drawer: DrawerWidget(),
         bottomNavigationBar: BottomNavigationBar(
-          selectedItemColor: Colors.blueAccent,
+          selectedItemColor: Color(0xff4979FB),
             unselectedItemColor: Colors.grey,
           showUnselectedLabels: false,
           onTap: (index) {
@@ -47,7 +52,7 @@ class _HomePageState extends State<HomePage> {
           items:const [
           BottomNavigationBarItem(icon: Icon(Icons.home,), label: "Home" ),
           BottomNavigationBarItem(icon: Icon(Icons.medical_services), label: "Medication"),
-          BottomNavigationBarItem(icon: Icon(Icons.notifications), label: "Notifications"),
+          BottomNavigationBarItem(icon: Icon(Icons.history), label: "Vitals History"),
           BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_outline), label: "Assistant"),
           ],
         ),

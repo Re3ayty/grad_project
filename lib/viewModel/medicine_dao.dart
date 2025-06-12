@@ -7,6 +7,16 @@ class MedicineDao {
     var db = FirebaseFirestore.instance;
     return db.collection('usersInfo').doc(uid).collection('medication_to_take');
   }
+  static Future<DocumentReference> addMedicineAndGetDocRef(
+      String uid, Map<String, dynamic> data) async {
+    final docRef = FirebaseFirestore.instance
+        .collection('usersInfo')
+        .doc(uid)
+        .collection('medication_to_take')
+        .doc(); // Generate doc ID
+    await docRef.set(data);
+    return docRef;
+  }
 
   static Future<void> addMedicineToUser(String uid, MedicineUser medicine) {
     var medicinesCollection = getMedicinesCollection(uid);

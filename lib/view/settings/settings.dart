@@ -12,6 +12,7 @@ import '../../../../utils/dialog_utils.dart';
 import '../../../../viewModel/provider/app_auth_provider.dart';
 import '../../utils/responsive_text.dart';
 import '../Auth/login.dart';
+import 'emergency_settings_page.dart';
 import 'finger_Print_page.dart';
 
 class SettingsScreenPage extends StatefulWidget {
@@ -195,6 +196,34 @@ class _SettingsScreenPageState extends State<SettingsScreenPage> {
                   Container(
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
+                        color: Color(0xffF4F4F4)
+                    ),
+                    child: ListTile(
+                      onTap: () {
+                        Navigator.push(context,MaterialPageRoute(builder: (context) => EmergencySettingsPage(),));
+                      },
+                      leading:
+                          ImageIcon(AssetImage("assets/Images/_icons.png"),color: Color(0xff4979FB),),
+                      // Icon(
+                      //   emergency
+                      //   color: Color(0xff4979FB),
+                      //
+                      // ),
+                      title: Text(
+                        "Emergency",
+                        style: GoogleFonts.getFont('Poppins',fontWeight: FontWeight.w400,
+                          // fontSize: 14,
+                        ),
+                        textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
+
+                      ),
+                      trailing: Icon(Icons.arrow_forward_ios_rounded,color: Colors.grey.shade400),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  Container(
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
                         color: Color(0xffF4F4F4)),
                     child: ListTile(
                       leading: Icon(
@@ -222,6 +251,7 @@ class _SettingsScreenPageState extends State<SettingsScreenPage> {
                       onTap: () => _showLanguageBottomSheet(context),
                     ),
                   ),
+
                   SizedBox(height: 20),
                   Container(
                     decoration: BoxDecoration(

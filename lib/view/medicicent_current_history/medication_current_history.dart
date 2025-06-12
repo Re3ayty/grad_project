@@ -1,3 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -9,6 +12,7 @@ import '../../viewModel/medicine_dao.dart';
 import '../../model/user_medicine.dart';
 
 import '../../utils/responsive_text.dart';
+import '../filling/filling.dart';
 
 class MedicineScreen extends StatefulWidget {
   final MedicineUser? newMedicine;
@@ -21,6 +25,7 @@ class MedicineScreen extends StatefulWidget {
 class _MedicineScreenState extends State<MedicineScreen>
     with SingleTickerProviderStateMixin {
   int selectedIndex = 1;
+
   List<MedicineUser> currentMedicines = [];
   List<MedicineUser> historyMedicines = [];
   List<MedicineUser> filteredMedicines = [];
@@ -99,6 +104,11 @@ class _MedicineScreenState extends State<MedicineScreen>
 
     try {
       await MedicineDao.moveMedicineToHistory(uid!, medicineId);
+      await FirebaseDatabase.instance
+          .ref()
+          .child('medications')
+          .child(medicineId)
+          .remove();
       if (!mounted) return; // Check if the widget is still mounted
       setState(() {
         currentMedicines.remove(medicineToDelete);
@@ -359,6 +369,8 @@ class _MedicineScreenState extends State<MedicineScreen>
                               itemCount: filteredMedicines.length,
                               itemBuilder: (context, index) {
                                 return MedicineCard(
+                                    medicine: filteredMedicines[index],
+
                                     name: filteredMedicines[index].medName ??
                                         "Unknown",
                                     frequency:
@@ -475,8 +487,10 @@ class _MedicineScreenState extends State<MedicineScreen>
         // onPressed: addMedicine,
         child: Icon(
           Icons.add,
+          color: Colors.white,
         ),
-        backgroundColor: Color(0xff4979FB).withOpacity(0.9),
+        backgroundColor: Color(0xff4979FB),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
       ),
     );
   }
@@ -484,6 +498,7 @@ class _MedicineScreenState extends State<MedicineScreen>
 
 class MedicineCard extends StatelessWidget {
   final String name;
+  final MedicineUser? medicine;
   final String frequency;
   final List<String> schedule;
   final VoidCallback? onDelete;
@@ -492,12 +507,15 @@ class MedicineCard extends StatelessWidget {
       isHistory; //to indicate that a card is in history to remove edit and delete buttons
 
   MedicineCard(
-      {required this.name,
+      {
+         this.medicine, required this.name,
       required this.frequency,
       required this.schedule,
       this.onDelete,
       this.onEdit,
       this.isHistory = false});
+  DatabaseReference refillData = FirebaseDatabase.instance.ref().child("refill");
+
 
   @override
   Widget build(BuildContext context) {
@@ -541,16 +559,30 @@ class MedicineCard extends StatelessWidget {
                       showDialog(
                           context: context,
                           builder: (BuildContext context) {
+
                             return AlertDialog(
-                              title: Text("Confirm Delete"),
+                              title: Center(
+                                child: Text("Confirm Delete",style: GoogleFonts.getFont('Poppins',fontWeight: FontWeight.w500
+                                  // fontSize: 14,
+                                ),
+                                  textAlign: TextAlign.center,
+                                  textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
+
+                                ),
+                              ),
                               content: Text(
-                                  "Are you sure you want to delete this medicine?"),
+                                  "Are you sure you want to delete this medication?"),
                               actions: [
                                 TextButton(
                                     onPressed: () {
                                       Navigator.of(context).pop();
                                     },
-                                    child: Text("Cancel")),
+                                    child: Text("Cancel",style: GoogleFonts.getFont('Poppins',fontWeight: FontWeight.w400,color: Colors.black
+                                      // fontSize: 14,
+                                    ),
+                                      textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
+
+                                    ),),
                                 TextButton(
                                     onPressed: () {
                                       Navigator.of(context).pop();
@@ -559,15 +591,189 @@ class MedicineCard extends StatelessWidget {
                                       }
                                     },
                                     child: Text(
-                                      "Delete",
-                                      style: TextStyle(color: Colors.red),
-                                    ))
+                                      "Delete",style: GoogleFonts.getFont('Poppins',fontWeight: FontWeight.w400,color: Colors.red
+                                      // fontSize: 14,
+                                    ),
+                                      textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
+
+                                    ),),
                               ],
                             );
                           });
                     },
                     child: Icon(Icons.delete_forever, color: Colors.red),
                   ),
+                  SizedBox(width: 10),
+                  // GestureDetector(
+                  //   onTap: () => Navigator.pushReplacement(
+                  //       context,
+                  //       MaterialPageRoute(
+                  //           builder: (context) =>
+                  //               StreamBuilder<DatabaseEvent>(
+                  //                 stream: refillData.onValue,
+                  //                 builder: (context, snapshot) {
+                  //                   if (snapshot.hasData && snapshot.data!.snapshot.value != null) {
+                  //                     final data = snapshot.data!.snapshot.value as Map;
+                  //                     int slot = data['slot'] ?? 0;
+                  //                     bool confirm = data['confirm'] ?? false;
+                  //                     String state = data['state'] ?? 'complete';
+                  //                     String request = data['request'] ?? 'processed';
+                  //
+                  //                     return PillAnimationScreen(
+                  //                       uid: uid!,
+                  //                       newMedicine: newMedicine!,
+                  //                       refillDatafromRealTime:{
+                  //                         'slot': slot,
+                  //                         'confirm': confirm,
+                  //                         'state': state,
+                  //                         'request': request,
+                  //                       },
+                  //                     );
+                  //                   } else if (snapshot.hasError) {
+                  //                     return Text("Error: ${snapshot.error}");
+                  //                   } else {
+                  //                     return CircularProgressIndicator();
+                  //                   }
+                  //                 },
+                  //               ))),
+                  //   // onTap: () =>
+                  //   //     Navigator.pushNamed(context, AppRoutes.addMedicationRoute),
+                  //
+                  //   child: Icon(Icons.replay_circle_filled, color:Colors.green),
+                  // ),
+                  // FutureBuilder<DocumentSnapshot>(
+                  //   future: FirebaseFirestore.instance
+                  //       .collection('usersInfo')
+                  //       .doc(FirebaseAuth.instance.currentUser!.uid)
+                  //       .collection('medication_to_take')
+                  //       .doc(medicine!.medName!)
+                  //       .get(),
+                  //   builder: (context, firestoreSnapshot) {
+                  //     if (!firestoreSnapshot.hasData || !firestoreSnapshot.data!.exists) {
+                  //       return Icon(Icons.replay_circle_filled, color: Colors.grey); // default
+                  //     }
+                  //
+                  //     int dose = int.tryParse(firestoreSnapshot.data!.get('dose').toString()) ?? 1;
+                  //
+                  //     return FutureBuilder<DatabaseEvent>(
+                  //       future: FirebaseDatabase.instance
+                  //           .ref()
+                  //           .child('missedmed')
+                  //           .child(medicine!.medName!)
+                  //           .once(),
+                  //       builder: (context, rtSnapshot) {
+                  //         bool shouldRefill = false;
+                  //
+                  //         if (rtSnapshot.hasData && rtSnapshot.data!.snapshot.value != null) {
+                  //           final data = rtSnapshot.data!.snapshot.value as Map<dynamic, dynamic>;
+                  //
+                  //           int acknowledgedCount = data.values
+                  //               .where((value) => value.toString().toLowerCase() == 'acknowledged')
+                  //               .length;
+                  //
+                  //           int maxAcks = (4 / dose).ceil();
+                  //
+                  //           if (acknowledgedCount >= maxAcks) {
+                  //             shouldRefill = true;
+                  //           }
+                  //         }
+                  //
+                  //         return GestureDetector(
+                  //           onTap: shouldRefill
+                  //               ? () async {
+                  //             var authProvider = Provider.of<AppAuthProvider>(context, listen: false);
+                  //             String? uid = authProvider.firebaseAuthUser?.uid;
+                  //             if (uid == null) return;
+                  //
+                  //             await refillData.update({
+                  //               "request": '${medicine?.containerNumber}[1,2,3,4]',
+                  //             });
+                  //
+                  //             Navigator.push(
+                  //               context,
+                  //               MaterialPageRoute(
+                  //                 builder: (context) => StreamBuilder<DatabaseEvent>(
+                  //                   stream: refillData.onValue,
+                  //                   builder: (context, snapshot) {
+                  //                     if (snapshot.hasData && snapshot.data!.snapshot.value != null) {
+                  //                       final data = snapshot.data!.snapshot.value as Map;
+                  //                       return PillAnimationScreen(
+                  //                         uid: uid,
+                  //                         newMedicine: medicine!,
+                  //                         isRefill: true,
+                  //                         refillDatafromRealTime: {
+                  //                           'slot': data['slot'],
+                  //                           'confirm': data['confirm'],
+                  //                           'state': data['state'],
+                  //                           'request': data['request'],
+                  //                         },
+                  //                       );
+                  //                     } else {
+                  //                       return Scaffold(body: Center(child: CircularProgressIndicator()));
+                  //                     }
+                  //                   },
+                  //                 ),
+                  //               ),
+                  //             );
+                  //           }
+                  //               : null,
+                  //           child: Icon(
+                  //             Icons.replay_circle_filled,
+                  //             color: shouldRefill ? Colors.green : Colors.grey,
+                  //           ),
+                  //         );
+                  //       },
+                  //     );
+                  //   },
+                  // ),
+
+                  GestureDetector(
+                    onTap: () async {
+                      var authProvider = Provider.of<AppAuthProvider>(context, listen: false);
+                      String? uid = authProvider.firebaseAuthUser?.uid;
+                      if (uid == null) return;
+
+                      await refillData.update({
+                        "request": '${medicine?.containerNumber}[1,2,3,4]',
+                      });
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => StreamBuilder<DatabaseEvent>(
+                            stream: refillData.onValue,
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData && snapshot.data!.snapshot.value != null) {
+                                final data = snapshot.data!.snapshot.value as Map;
+                                int slot = data['slot'] ?? 0;
+                                bool confirm = data['confirm'] ?? false;
+                                String state = data['state'] ?? 'complete';
+                                String request = data['request']?.toString() ?? 'processed';
+
+                                return PillAnimationScreen(
+                                  uid: uid,
+                                  newMedicine: medicine!,
+                                  isRefill: true,
+                                  refillDatafromRealTime: {
+                                    'slot': slot,
+                                    'confirm': confirm,
+                                    'state': state,
+                                    'request': request,
+                                  },
+                                );
+                              } else {
+                                return Scaffold(
+                                  body: Center(child: CircularProgressIndicator()),
+                                );
+                              }
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                    child: Icon(Icons.replay_circle_filled, color: Colors.green),
+                  ),
+
                 ],
               ),
       ),

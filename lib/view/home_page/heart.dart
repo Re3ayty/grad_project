@@ -12,6 +12,7 @@ import '../../model/heart_rate_readings.dart';
 import '../../utils/responsive_text.dart';
 import '../../viewModel/firbase_realtime_dao.dart';
 import '../../viewModel/provider/app_auth_provider.dart';
+import 'old_history_heartrate_screen.dart';
 
 class HealthMetricsCard extends StatefulWidget {
   Map<String, dynamic> healthMatrixData;

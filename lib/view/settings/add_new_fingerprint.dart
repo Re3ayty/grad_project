@@ -1,7 +1,11 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hcs_grad_project/viewModel/firbase_realtime_dao.dart';
+import 'package:hcs_grad_project/viewModel/provider/app_auth_provider.dart';
+import 'package:provider/provider.dart';
 import '../../utils/responsive_text.dart';
+import '../../model/fingerprints.dart';
 
 class AddNewFingerprint extends StatefulWidget {
   const AddNewFingerprint({super.key});
@@ -15,19 +19,36 @@ class _AddNewFingerprintState extends State<AddNewFingerprint> {
   final fingerprintIDController = TextEditingController();
 
   final dbRefFingerprintEnrolledStatus =
-  FirebaseDatabase.instance.ref("fingerprint/enroll/status");
+      FirebaseDatabase.instance.ref("fingerprint/enroll/status");
   final updatingCommandsEnrollFingerprint =
-  FirebaseDatabase.instance.ref("commands");
+      FirebaseDatabase.instance.ref("commands");
 
   Color _iconColor = const Color(0xff4979FB);
   bool _hasHandledSuccess = false;
   String? _lastStatus;
+  List<int> usedIDs = [];
 
   @override
   void dispose() {
     fingerprintNameController.dispose();
     fingerprintIDController.dispose();
     super.dispose();
+  }
+
+  void fetchUsedIDs() async {
+    final uid = Provider.of<AppAuthProvider>(context, listen: false)
+        .firebaseAuthUser!
+        .uid;
+    List<int> IDs = await FingerprintDao.getUsedIDs(uid);
+    setState(() {
+      usedIDs = IDs;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUsedIDs();
   }
 
   Future<void> _startEnrollment() async {
@@ -40,6 +61,18 @@ class _AddNewFingerprintState extends State<AddNewFingerprint> {
     final idText = fingerprintIDController.text.trim();
     if (idText.isEmpty) {
       _showSnackbar('Please enter a fingerprint ID', Colors.red);
+      return;
+    }
+
+    final fingerprintname = fingerprintNameController.text.trim();
+    if (fingerprintname.isEmpty) {
+      _showSnackbar('Please enter a fingerprint name', Colors.red);
+      return;
+    }
+
+    final id = int.tryParse(idText);
+    if (usedIDs.contains(id)) {
+      _showSnackbar("ID already used. Pick another ID", Colors.red);
       return;
     }
 
@@ -76,6 +109,15 @@ class _AddNewFingerprintState extends State<AddNewFingerprint> {
 
       _showSnackbar("Fingerprint enrolled successfully!", Colors.green);
 
+      final uid = Provider.of<AppAuthProvider>(context, listen: false)
+          .firebaseAuthUser!
+          .uid;
+      final fingerprints = FingerPrintsData(
+        fingerprintName: fingerprintNameController.text.trim(),
+        id: int.parse(fingerprintIDController.text.trim()),
+      );
+      FingerprintDao.addFingerprintToUser(uid, fingerprints);
+
       Future.delayed(const Duration(seconds: 2), () {
         if (mounted) {
           Navigator.of(context).pop(); // Pop the screen after delay
@@ -86,7 +128,6 @@ class _AddNewFingerprintState extends State<AddNewFingerprint> {
       _showSnackbar("Enrollment failed: $status", Colors.red);
     }
   }
-
 
   bool _isFailureStatus(String status) {
     return [
@@ -144,7 +185,7 @@ class _AddNewFingerprintState extends State<AddNewFingerprint> {
     if (status == 'Ready' || isFailure) {
       return Column(
         children: [
-          if (_iconColor==Colors.red)
+          if (_iconColor == Colors.red)
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: Text(
@@ -178,9 +219,6 @@ class _AddNewFingerprintState extends State<AddNewFingerprint> {
 
     return const SizedBox.shrink(); // returns nothing for other statuses
   }
-
-
-
 
   Widget _buildLabel(String text, BuildContext context) {
     return Align(
@@ -232,11 +270,11 @@ class _AddNewFingerprintState extends State<AddNewFingerprint> {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Color(0xff4979FB)),
         ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12), // Shortens the height
+        contentPadding: const EdgeInsets.symmetric(
+            vertical: 8, horizontal: 12), // Shortens the height
       ),
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -270,7 +308,8 @@ class _AddNewFingerprintState extends State<AddNewFingerprint> {
                   const SizedBox(width: 10),
                   Expanded(
                     flex: 5,
-                    child: _buildTextField(fingerprintNameController, 'Fingerprint name'),
+                    child: _buildTextField(
+                        fingerprintNameController, 'Fingerprint name'),
                   ),
                 ],
               ),
@@ -297,7 +336,8 @@ class _AddNewFingerprintState extends State<AddNewFingerprint> {
                     return const CircularProgressIndicator();
                   }
 
-                  if (snapshot.hasData && snapshot.data!.snapshot.value != null) {
+                  if (snapshot.hasData &&
+                      snapshot.data!.snapshot.value != null) {
                     final status = snapshot.data!.snapshot.value.toString();
 
                     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -321,8 +361,9 @@ class _AddNewFingerprintState extends State<AddNewFingerprint> {
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.only(bottom: 70,top: 40),
-                          child: Icon(Icons.fingerprint, size: 200, color: _iconColor),
+                          padding: const EdgeInsets.only(bottom: 70, top: 40),
+                          child: Icon(Icons.fingerprint,
+                              size: 200, color: _iconColor),
                         ),
                         _buildUIBasedOnStatus(status),
                       ],

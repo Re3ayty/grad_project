@@ -8,7 +8,9 @@ import 'package:intl/intl.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:provider/provider.dart';
 
+import '../../model/heart_rate_readings.dart';
 import '../../utils/responsive_text.dart';
+import '../../viewModel/firbase_realtime_dao.dart';
 import '../../viewModel/provider/app_auth_provider.dart';
 import 'old_history_heartrate_screen.dart';
 
@@ -24,7 +26,7 @@ class HealthMetricsCard extends StatefulWidget {
 
 class _HealthMetricsCardState extends State<HealthMetricsCard> {
   DatabaseReference updatingCommandsHeart =
-      FirebaseDatabase.instance.ref("commands");
+  FirebaseDatabase.instance.ref("commands");
 
   @override
   Widget build(BuildContext context) {
@@ -177,7 +179,20 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
     {
       SpO2State = 'Normal';
     }
-
+    if (!fingerPlaced && liveBPM == 0 && liveSpO2 == 0 && processing == 0 && status=="Running") {
+      final uid =
+          Provider.of<AppAuthProvider>(context, listen: false)
+              .firebaseAuthUser
+              ?.uid;
+      if (uid != null) {
+        final boxData = HeartRateData(
+          avgBPM: widget.healthMatrixData['avgBPM'],
+          avgSpO2: widget.healthMatrixData['avgSpO2'],
+          lastUpdated: DateTime.now(),
+        );
+        MedicationBoxDao.addVitalsToUser(uid, boxData);
+      }
+    }
     // void showMeasurementDialog(BuildContext context) {
     //   showDialog(
     //     context: context,
@@ -262,9 +277,9 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
 
                   // Get updated values from the parent widget
                   final bool latestFinger =
-                      widget.healthMatrixData['fingerPlaced'];
+                  widget.healthMatrixData['fingerPlaced'];
                   final int latestProcessing =
-                      widget.healthMatrixData['processing'];
+                  widget.healthMatrixData['processing'];
                   final String latestStatus = widget.healthMatrixData['status'];
 
                   if (mounted) {
@@ -373,7 +388,7 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
                     fontWeight: FontWeight.w500,
                   ),
                   textScaler:
-                      TextScaler.linear(ScaleSize.textScaleFactor(context)),
+                  TextScaler.linear(ScaleSize.textScaleFactor(context)),
                 ),
               ],
             ),
@@ -389,7 +404,7 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
                     fontWeight: FontWeight.w500,
                   ),
                   textScaler:
-                      TextScaler.linear(ScaleSize.textScaleFactor(context)),
+                  TextScaler.linear(ScaleSize.textScaleFactor(context)),
                 ),
               ),
             ),
@@ -404,7 +419,7 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
                       color: CupertinoColors.inactiveGray,
                       fontSize: 10),
                   textScaler:
-                      TextScaler.linear(ScaleSize.textScaleFactor(context)),
+                  TextScaler.linear(ScaleSize.textScaleFactor(context)),
                 ),
               ),
             ),
@@ -431,7 +446,7 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
                     fontWeight: FontWeight.w500,
                   ),
                   textScaler:
-                      TextScaler.linear(ScaleSize.textScaleFactor(context)),
+                  TextScaler.linear(ScaleSize.textScaleFactor(context)),
                 ),
               ],
             ),
@@ -456,7 +471,7 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
                       color: CupertinoColors.inactiveGray,
                       fontSize: 10),
                   textScaler:
-                      TextScaler.linear(ScaleSize.textScaleFactor(context)),
+                  TextScaler.linear(ScaleSize.textScaleFactor(context)),
                 ),
               ),
             ),
@@ -484,13 +499,13 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
                 ):
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xffE5E4E3),
-                      padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),),
-                      // backgroundColor:
-                      //     MaterialStatePropertyAll(Color(0xffE5E4E3))),
+                    backgroundColor: Color(0xffE5E4E3),
+                    padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),),
+                  // backgroundColor:
+                  //     MaterialStatePropertyAll(Color(0xffE5E4E3))),
                   onPressed: () async {
                     if (!bothLiveWorking) {
                       await updatingCommandsHeart.update({

@@ -327,6 +327,118 @@ class _PillAnimationScreenState extends State<PillAnimationScreen> {
         .cast<TimeOfDay>()
         .toList() ??
         [];
+    Future<void> addMedAfterpillIndex() async {
+      if (state=='complete')
+    {
+      setState(() {
+        isRunning = true;
+      });
+      if (!widget.isRefill) {
+        try {var authProvider = Provider.of<AppAuthProvider>(context,
+            listen: false);
+        String? uid = authProvider.firebaseAuthUser?.uid;
+        List<dynamic> formattedIntakeTimes = intakeTimes!.map((time) => formatTimeOfDay24Hour(time)).toList();
+        Map<dynamic, dynamic> medication = {
+          'container_no': widget.newMedicine.containerNumber,
+          'dose': widget.newMedicine.dose,
+          'end_date':
+          '${widget.newMedicine.endDate?.day}/${widget.newMedicine.endDate?.month}/${widget.newMedicine.endDate?.year}',
+          'frequency': widget.newMedicine.frequency,
+          'intake_times': formattedIntakeTimes,
+          'med_name': widget.newMedicine.medName,
+          'ongoing': widget.newMedicine.ongoing,
+          'start_date':
+          '${widget.newMedicine.startDate?.day}/${widget.newMedicine.startDate?.month}/${widget.newMedicine.startDate?.year}'
+        };
+        // dbRef.push().set(medication);
+        if (uid == null) return;
+
+
+
+        DateFormat dateFormat = DateFormat('dd/MM/yyyy');
+
+// Step 1: Add to Firestore and get the doc ID
+
+        final firestoreDocRef = await MedicineDao.addMedicineAndGetDocRef(
+          uid,
+          {
+            'med_name': widget.newMedicine.medName,
+            'dose': widget.newMedicine.dose,
+            'container_no': widget.newMedicine.containerNumber,
+            'ongoing': widget.newMedicine.ongoing,
+            'frequency': widget.newMedicine.frequency,
+            'start_date': widget.newMedicine.startDate != null ? dateFormat.format(widget.newMedicine.startDate!) : null,
+            'end_date': widget.newMedicine.endDate != null && ! widget.newMedicine.ongoing! ? dateFormat.format(widget.newMedicine.endDate!) : null,
+            'intake_times': formattedIntakeTimes,
+          },
+        );
+
+        final String medId = firestoreDocRef.id;
+
+// Step 2: Create the medicine model with this ID
+//                 newMedicine = MedicineUser(
+//                   id: medId,
+//                   medName: widget.newMedicine.medName,
+//                   dose: widget.newMedicine.dose,
+//                   containerNumber: widget.newMedicine.containerNumber,
+//                   ongoing: widget.newMedicine.ongoing,
+//                   frequency: widget.newMedicine.frequency,
+//                   startDate: widget.newMedicine.startDate,
+//                   endDate: isOngoing ? null : endDate,
+//                   intakeTimes: formattedIntakeTimes,
+//                 );
+
+// Step 3: Save to Realtime DB using same ID
+        await FirebaseDatabase.instance.ref('medications').child(medId).set({
+          'id': medId,
+          'med_name': widget.newMedicine.medName,
+          'dose': widget.newMedicine.dose,
+          'container_no': widget.newMedicine.containerNumber,
+          'ongoing': widget.newMedicine.ongoing,
+          'frequency': widget.newMedicine.frequency,
+          'start_date': widget.newMedicine.startDate != null
+              ? dateFormat.format(widget.newMedicine.startDate!)
+              : null,
+          'end_date': widget.newMedicine.endDate != null
+              ? dateFormat.format(widget.newMedicine.endDate!)
+              : null,
+          'intake_times': widget.newMedicine.intakeTimes,
+        });
+        await updatingCommandsSyncMedication.update({
+          "syncMedication": true,
+        });
+        // await MedicineDao.addMedicineToUser(
+        //     widget.uid, widget.newMedicine);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Medicine added successfully!'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+        Navigator.pop(context);
+          // Navigator.pushReplacement(
+          //     context,
+          //     MaterialPageRoute(
+          //         builder: (context) =>
+          //             MedicineScreen(newMedicine: widget.newMedicine)));
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Failed to add medication: $e")));
+        } finally {
+          setState(() {
+            isRunning = false;
+          });
+        }
+      }else {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Refill completed successfully!')),
+        );
+      }}}
+    if(pillIndex==4)
+    {
+      addMedAfterpillIndex();
+    }
 
     return Scaffold(
 
@@ -404,116 +516,116 @@ class _PillAnimationScreenState extends State<PillAnimationScreen> {
                 //     context,
                 //     MaterialPageRoute(builder: (context) => ),
                 //   );
-              } else if (pillIndex == 4)
-              {
+              } else if (pillIndex == 4) {
                 await updatingRefill.update({
                   "confirm": true,
                 });
-                setState(() {
-                  isRunning = true;
-                });
-                if (!widget.isRefill) {
-                try {var authProvider = Provider.of<AppAuthProvider>(context,
-                    listen: false);
-                String? uid = authProvider.firebaseAuthUser?.uid;
-                List<dynamic> formattedIntakeTimes = intakeTimes!.map((time) => formatTimeOfDay24Hour(time)).toList();
-                Map<dynamic, dynamic> medication = {
-                  'container_no': widget.newMedicine.containerNumber,
-                  'dose': widget.newMedicine.dose,
-                  'end_date':
-                  '${widget.newMedicine.endDate?.day}/${widget.newMedicine.endDate?.month}/${widget.newMedicine.endDate?.year}',
-                  'frequency': widget.newMedicine.frequency,
-                  'intake_times': formattedIntakeTimes,
-                  'med_name': widget.newMedicine.medName,
-                  'ongoing': widget.newMedicine.ongoing,
-                  'start_date':
-                  '${widget.newMedicine.startDate?.day}/${widget.newMedicine.startDate?.month}/${widget.newMedicine.startDate?.year}'
-                };
-                // dbRef.push().set(medication);
-                if (uid == null) return;
-
-
-
-                DateFormat dateFormat = DateFormat('dd/MM/yyyy');
-
-// Step 1: Add to Firestore and get the doc ID
-
-                final firestoreDocRef = await MedicineDao.addMedicineAndGetDocRef(
-                  uid,
-                  {
-                    'med_name': widget.newMedicine.medName,
-                    'dose': widget.newMedicine.dose,
-                    'container_no': widget.newMedicine.containerNumber,
-                    'ongoing': widget.newMedicine.ongoing,
-                    'frequency': widget.newMedicine.frequency,
-                    'start_date': widget.newMedicine.startDate != null ? dateFormat.format(widget.newMedicine.startDate!) : null,
-                    'end_date': widget.newMedicine.endDate != null && ! widget.newMedicine.ongoing! ? dateFormat.format(widget.newMedicine.endDate!) : null,
-                    'intake_times': formattedIntakeTimes,
-                  },
-                );
-
-                final String medId = firestoreDocRef.id;
-
-// Step 2: Create the medicine model with this ID
-//                 newMedicine = MedicineUser(
-//                   id: medId,
-//                   medName: widget.newMedicine.medName,
-//                   dose: widget.newMedicine.dose,
-//                   containerNumber: widget.newMedicine.containerNumber,
-//                   ongoing: widget.newMedicine.ongoing,
-//                   frequency: widget.newMedicine.frequency,
-//                   startDate: widget.newMedicine.startDate,
-//                   endDate: isOngoing ? null : endDate,
-//                   intakeTimes: formattedIntakeTimes,
+//                 setState(() {
+//                   isRunning = true;
+//                 });
+//                 if (!widget.isRefill) {
+//                 try {var authProvider = Provider.of<AppAuthProvider>(context,
+//                     listen: false);
+//                 String? uid = authProvider.firebaseAuthUser?.uid;
+//                 List<dynamic> formattedIntakeTimes = intakeTimes!.map((time) => formatTimeOfDay24Hour(time)).toList();
+//                 Map<dynamic, dynamic> medication = {
+//                   'container_no': widget.newMedicine.containerNumber,
+//                   'dose': widget.newMedicine.dose,
+//                   'end_date':
+//                   '${widget.newMedicine.endDate?.day}/${widget.newMedicine.endDate?.month}/${widget.newMedicine.endDate?.year}',
+//                   'frequency': widget.newMedicine.frequency,
+//                   'intake_times': formattedIntakeTimes,
+//                   'med_name': widget.newMedicine.medName,
+//                   'ongoing': widget.newMedicine.ongoing,
+//                   'start_date':
+//                   '${widget.newMedicine.startDate?.day}/${widget.newMedicine.startDate?.month}/${widget.newMedicine.startDate?.year}'
+//                 };
+//                 // dbRef.push().set(medication);
+//                 if (uid == null) return;
+//
+//
+//
+//                 DateFormat dateFormat = DateFormat('dd/MM/yyyy');
+//
+// // Step 1: Add to Firestore and get the doc ID
+//
+//                 final firestoreDocRef = await MedicineDao.addMedicineAndGetDocRef(
+//                   uid,
+//                   {
+//                     'med_name': widget.newMedicine.medName,
+//                     'dose': widget.newMedicine.dose,
+//                     'container_no': widget.newMedicine.containerNumber,
+//                     'ongoing': widget.newMedicine.ongoing,
+//                     'frequency': widget.newMedicine.frequency,
+//                     'start_date': widget.newMedicine.startDate != null ? dateFormat.format(widget.newMedicine.startDate!) : null,
+//                     'end_date': widget.newMedicine.endDate != null && ! widget.newMedicine.ongoing! ? dateFormat.format(widget.newMedicine.endDate!) : null,
+//                     'intake_times': formattedIntakeTimes,
+//                   },
 //                 );
-
-// Step 3: Save to Realtime DB using same ID
-                await FirebaseDatabase.instance.ref('medications').child(medId).set({
-                  'id': medId,
-                  'med_name': widget.newMedicine.medName,
-                  'dose': widget.newMedicine.dose,
-                  'container_no': widget.newMedicine.containerNumber,
-                  'ongoing': widget.newMedicine.ongoing,
-                  'frequency': widget.newMedicine.frequency,
-                  'start_date': widget.newMedicine.startDate != null
-                      ? dateFormat.format(widget.newMedicine.startDate!)
-                      : null,
-                  'end_date': widget.newMedicine.endDate != null
-                      ? dateFormat.format(widget.newMedicine.endDate!)
-                      : null,
-                  'intake_times': widget.newMedicine.intakeTimes,
-                });
-                await updatingCommandsSyncMedication.update({
-                  "syncMedication": true,
-                });
-                  // await MedicineDao.addMedicineToUser(
-                  //     widget.uid, widget.newMedicine);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Medicine added successfully!'),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                  Navigator.pop(context);
-                  // Navigator.pushReplacement(
-                  //     context,
-                  //     MaterialPageRoute(
-                  //         builder: (context) =>
-                  //             MedicineScreen(newMedicine: widget.newMedicine)));
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Failed to add medication: $e")));
-                } finally {
-                  setState(() {
-                    isRunning = false;
-                  });
-                }
-              }else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Refill completed successfully!')),
-                );
-                Navigator.pop(context);
-              }}
+//
+//                 final String medId = firestoreDocRef.id;
+//
+// // Step 2: Create the medicine model with this ID
+// //                 newMedicine = MedicineUser(
+// //                   id: medId,
+// //                   medName: widget.newMedicine.medName,
+// //                   dose: widget.newMedicine.dose,
+// //                   containerNumber: widget.newMedicine.containerNumber,
+// //                   ongoing: widget.newMedicine.ongoing,
+// //                   frequency: widget.newMedicine.frequency,
+// //                   startDate: widget.newMedicine.startDate,
+// //                   endDate: isOngoing ? null : endDate,
+// //                   intakeTimes: formattedIntakeTimes,
+// //                 );
+//
+// // Step 3: Save to Realtime DB using same ID
+//                 await FirebaseDatabase.instance.ref('medications').child(medId).set({
+//                   'id': medId,
+//                   'med_name': widget.newMedicine.medName,
+//                   'dose': widget.newMedicine.dose,
+//                   'container_no': widget.newMedicine.containerNumber,
+//                   'ongoing': widget.newMedicine.ongoing,
+//                   'frequency': widget.newMedicine.frequency,
+//                   'start_date': widget.newMedicine.startDate != null
+//                       ? dateFormat.format(widget.newMedicine.startDate!)
+//                       : null,
+//                   'end_date': widget.newMedicine.endDate != null
+//                       ? dateFormat.format(widget.newMedicine.endDate!)
+//                       : null,
+//                   'intake_times': widget.newMedicine.intakeTimes,
+//                 });
+//                 await updatingCommandsSyncMedication.update({
+//                   "syncMedication": true,
+//                 });
+//                   // await MedicineDao.addMedicineToUser(
+//                   //     widget.uid, widget.newMedicine);
+//                   ScaffoldMessenger.of(context).showSnackBar(
+//                     SnackBar(
+//                       content: Text('Medicine added successfully!'),
+//                       duration: Duration(seconds: 2),
+//                     ),
+//                   );
+//                   Navigator.pop(context);
+//                   // Navigator.pushReplacement(
+//                   //     context,
+//                   //     MaterialPageRoute(
+//                   //         builder: (context) =>
+//                   //             MedicineScreen(newMedicine: widget.newMedicine)));
+//                 } catch (e) {
+//                   ScaffoldMessenger.of(context).showSnackBar(
+//                       SnackBar(content: Text("Failed to add medication: $e")));
+//                 } finally {
+//                   setState(() {
+//                     isRunning = false;
+//                   });
+//                 }
+//               }else {
+//                 ScaffoldMessenger.of(context).showSnackBar(
+//                   SnackBar(content: Text('Refill completed successfully!')),
+//                 );
+//                 Navigator.pop(context);
+//               }}
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Color(0xff4979FB),

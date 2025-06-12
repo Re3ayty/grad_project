@@ -25,104 +25,79 @@ class MedicineScreen extends StatefulWidget {
 class _MedicineScreenState extends State<MedicineScreen>
     with SingleTickerProviderStateMixin {
   int selectedIndex = 1;
-
-  List<MedicineUser> currentMedicines = [];
-  List<MedicineUser> historyMedicines = [];
-  List<MedicineUser> filteredMedicines = [];
-  List<MedicineUser> filteredHistoryMedicines = [];
+  final TextEditingController searchController = TextEditingController();
+  String searchQuery = "";
   late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    fetchCurrentMedicines();
-    fetchHistoryMedicines();
-    _tabController.addListener(() {
-      if (_tabController.index == 0) {
-        setState(() {
-          filteredMedicines = List.from(currentMedicines);
-        });
-      } else if (_tabController.index == 1) {
-        setState(() {
-          filteredHistoryMedicines = List.from(historyMedicines);
-        });
-      }
+    searchController.addListener(() {
+      searchQuery = searchController.text.toLowerCase();
     });
-    // filterHistoryMedicines();
-    // filterMedicines();
   }
 
   @override
   void dipose() {
     _tabController.dispose();
+    searchController.dispose();
     super.dispose();
   }
 
-  void fetchCurrentMedicines() async {
+  // void fetchCurrentMedicines() async {
+  //   var authProvider = Provider.of<AppAuthProvider>(context, listen: false);
+  //   String? uid = authProvider.firebaseAuthUser?.uid;
+
+  //   if (uid != null) {
+  //     List<MedicineUser> medicines = await MedicineDao.getMedicinesForUser(uid);
+  //     if (!mounted) return; // Check if the widget is still mounted
+  //     setState(() {
+  //       currentMedicines = medicines;
+  //       filteredMedicines = List.from(currentMedicines);
+  //     });
+  //     moveEndedMedicinesToHistory();
+  //   }
+  // }
+
+  // void fetchHistoryMedicines() async {
+  //   var authProvider = Provider.of<AppAuthProvider>(context, listen: false);
+  //   String? uid = authProvider.firebaseAuthUser?.uid;
+  //   if (uid != null) {
+  //     List<MedicineUser> medicines =
+  //         await MedicineDao.getHistoryMedicinesForUser(uid);
+  //     if (!mounted) return; // Check if the widget is still mounted
+  //     setState(() {
+  //       historyMedicines = medicines;
+  //       filteredHistoryMedicines = List.from(historyMedicines);
+  //     });
+  //   }
+  // }
+
+  void deleteMedicine(MedicineUser medicine) async {
     var authProvider = Provider.of<AppAuthProvider>(context, listen: false);
     String? uid = authProvider.firebaseAuthUser?.uid;
 
-    if (uid != null) {
-      List<MedicineUser> medicines = await MedicineDao.getMedicinesForUser(uid);
-      if (!mounted) return; // Check if the widget is still mounted
-      setState(() {
-        currentMedicines = medicines;
-        filteredMedicines = List.from(currentMedicines);
-      });
-      moveEndedMedicinesToHistory();
-    }
-  }
-
-  void fetchHistoryMedicines() async {
-    var authProvider = Provider.of<AppAuthProvider>(context, listen: false);
-    String? uid = authProvider.firebaseAuthUser?.uid;
-    if (uid != null) {
-      List<MedicineUser> medicines =
-          await MedicineDao.getHistoryMedicinesForUser(uid);
-      if (!mounted) return; // Check if the widget is still mounted
-      setState(() {
-        historyMedicines = medicines;
-        filteredHistoryMedicines = List.from(historyMedicines);
-      });
-    }
-  }
-
-  void deleteMedicine(int index) async {
-    var authProvider = Provider.of<AppAuthProvider>(context, listen: false);
-    String? uid = authProvider.firebaseAuthUser?.uid;
-
-    if (uid == null || index < 0 || index >= currentMedicines.length) {
+    if (uid == null || medicine.id == null) {
       // Ensure the index is valid and the user is authenticated
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Invalid operation")),
       );
       return;
     }
-    MedicineUser medicineToDelete = currentMedicines[index];
-    String medicineId = medicineToDelete.id!;
-
     try {
-      await MedicineDao.moveMedicineToHistory(uid!, medicineId);
+      await MedicineDao.moveMedicineToHistory(uid, medicine.id!);
       await FirebaseDatabase.instance
           .ref()
           .child('medications')
-          .child(medicineId)
+          .child(medicine.id!)
           .remove();
-      if (!mounted) return; // Check if the widget is still mounted
-      setState(() {
-        currentMedicines.remove(medicineToDelete);
-        filteredMedicines = List.from(currentMedicines);
-        historyMedicines.add(medicineToDelete);
-        filteredHistoryMedicines = List.from(historyMedicines);
-      });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Medicine moved to history"),
         ),
       );
     } catch (e) {
-      if (!mounted) return; // Check if the widget is still mounted
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Failed to move medicine to history: $e"),
@@ -131,29 +106,29 @@ class _MedicineScreenState extends State<MedicineScreen>
     }
   }
 
-  void moveEndedMedicinesToHistory() async {
-    var authProvider = Provider.of<AppAuthProvider>(context, listen: false);
-    String? uid = authProvider.firebaseAuthUser?.uid;
-    if (uid == null) return;
+  // void moveEndedMedicinesToHistory() async {
+  //   var authProvider = Provider.of<AppAuthProvider>(context, listen: false);
+  //   String? uid = authProvider.firebaseAuthUser?.uid;
+  //   if (uid == null) return;
 
-    DateTime today = DateTime.now();
-    today = DateTime(today.year, today.month, today.day);
+  //   DateTime today = DateTime.now();
+  //   today = DateTime(today.year, today.month, today.day);
 
-    for (var medicine in List<MedicineUser>.from(currentMedicines)) {
-      if (medicine.endDate != null) {
-        DateTime enddate = DateTime(
-          medicine.endDate!.year,
-          medicine.endDate!.month,
-          medicine.endDate!.day,
-        );
-        if (enddate.isBefore(today)) {
-          try {
-            await MedicineDao.moveMedicineToHistory(uid, medicine.id!);
-          } catch (e) {}
-        }
-      }
-    }
-  }
+  //   for (var medicine in List<MedicineUser>.from(currentdisplayList)) {
+  //     if (medicine.endDate != null) {
+  //       DateTime enddate = DateTime(
+  //         medicine.endDate!.year,
+  //         medicine.endDate!.month,
+  //         medicine.endDate!.day,
+  //       );
+  //       if (enddate.isBefore(today)) {
+  //         try {
+  //           await MedicineDao.moveMedicineToHistory(uid, medicine.id!);
+  //         } catch (e) {}
+  //       }
+  //     }
+  //   }
+  // }
   // void editMedicine(int index) {
   //   TextEditingController nameController =
   //       TextEditingController(text: currentMedicines[index].medName ?? "");
@@ -202,24 +177,6 @@ class _MedicineScreenState extends State<MedicineScreen>
   //     },
   //   );
   // }
-
-  void filterMedicines(String query) {
-    setState(() {
-      filteredMedicines = currentMedicines
-          .where((medicine) =>
-              medicine.medName!.toLowerCase().contains(query.toLowerCase()))
-          .toList();
-    });
-  }
-
-  void filterHistoryMedicines(String query) {
-    setState(() {
-      filteredHistoryMedicines = historyMedicines
-          .where((medicine) =>
-              medicine.medName!.toLowerCase().contains(query.toLowerCase()))
-          .toList();
-    });
-  }
 
   // void addMedicine() {
   //   TextEditingController nameController = TextEditingController();
@@ -291,15 +248,12 @@ class _MedicineScreenState extends State<MedicineScreen>
           Padding(
             padding: EdgeInsets.all(16),
             child: TextField(
+              controller: searchController,
               cursorColor: Color(0xff4979FB),
               onChanged: (query) {
-                if (_tabController.index == 0) {
-                  //to search in current medicines
-                  filterMedicines(query);
-                } else {
-                  //to search in history medicines
-                  filterHistoryMedicines(query);
-                }
+                setState(() {
+                  searchQuery = query.toLowerCase();
+                });
               },
               decoration: InputDecoration(
                 focusedBorder: OutlineInputBorder(
@@ -357,29 +311,26 @@ class _MedicineScreenState extends State<MedicineScreen>
                                 snapshot.data!.isEmpty) {
                               return Center(child: Text("No medicines found."));
                             }
-                            if (snapshot.hasData) {
-                              if (currentMedicines != snapshot.data!) {
-                                currentMedicines = snapshot.data!;
-                              }
-                              if (filteredMedicines.isEmpty) {
-                                filteredMedicines = List.from(currentMedicines);
-                              }
-                            }
+                            final List<MedicineUser> currentdisplayList = searchQuery
+                                    .isEmpty
+                                ? snapshot.data!
+                                : snapshot.data!
+                                    .where((medicine) => medicine.medName!
+                                        .toLowerCase()
+                                        .contains(searchQuery.toLowerCase()))
+                                    .toList();
                             return ListView.builder(
-                              itemCount: filteredMedicines.length,
+                              itemCount: currentdisplayList.length,
                               itemBuilder: (context, index) {
                                 return MedicineCard(
-                                    medicine: filteredMedicines[index],
-
-                                    name: filteredMedicines[index].medName ??
+                                    medicine: currentdisplayList[index],
+                                    name:
+                                        currentdisplayList[index].medName ?? "Unknown",
+                                    frequency: currentdisplayList[index].frequency ??
                                         "Unknown",
-                                    frequency:
-                                        filteredMedicines[index].frequency ??
-                                            "Unknown",
                                     schedule:
-                                        filteredMedicines[index].intakeTimes ??
-                                            [],
-                                    onDelete: () => deleteMedicine(index),
+                                        currentdisplayList[index].intakeTimes ?? [],
+                                    onDelete: () => deleteMedicine(currentdisplayList[index]),
                                     onEdit: () async {
                                       final result = await Navigator.push(
                                         context,
@@ -388,7 +339,7 @@ class _MedicineScreenState extends State<MedicineScreen>
                                                 AddMedicationScreen(
                                                   isEditing: true,
                                                   medicine:
-                                                      currentMedicines[index],
+                                                      currentdisplayList[index],
                                                 )),
                                       );
                                       if (result != null) {
@@ -425,29 +376,28 @@ class _MedicineScreenState extends State<MedicineScreen>
                               return Center(child: Text("No medicines found."));
                             }
 
-                            if (snapshot.hasData) {
-                              if (historyMedicines != snapshot.data!) {
-                                historyMedicines = snapshot.data!;
-                              }
-                              if (filteredHistoryMedicines.isEmpty) {
-                                filteredHistoryMedicines =
-                                    List.from(historyMedicines);
-                              }
-                            }
+                            final List<MedicineUser> historyDisplayList =
+                                searchQuery.isEmpty
+                                    ? snapshot.data!
+                                    : snapshot.data!
+                                        .where((medicine) => medicine.medName!
+                                            .toLowerCase()
+                                            .contains(
+                                                searchQuery.toLowerCase()))
+                                        .toList();
 
                             return ListView.builder(
-                              itemCount: filteredHistoryMedicines.length,
+                              itemCount: historyDisplayList.length,
                               itemBuilder: (context, index) {
                                 return MedicineCard(
-                                  name:
-                                      filteredHistoryMedicines[index].medName ??
-                                          "Unknown",
-                                  frequency: filteredHistoryMedicines[index]
-                                          .frequency ??
+                                  name: historyDisplayList[index].medName ??
                                       "Unknown",
-                                  schedule: filteredHistoryMedicines[index]
-                                          .intakeTimes ??
-                                      [],
+                                  frequency:
+                                      historyDisplayList[index].frequency ??
+                                          "Unknown",
+                                  schedule:
+                                      historyDisplayList[index].intakeTimes ??
+                                          [],
                                   isHistory: true,
                                 );
                               },
@@ -507,15 +457,15 @@ class MedicineCard extends StatelessWidget {
       isHistory; //to indicate that a card is in history to remove edit and delete buttons
 
   MedicineCard(
-      {
-         this.medicine, required this.name,
+      {this.medicine,
+      required this.name,
       required this.frequency,
       required this.schedule,
       this.onDelete,
       this.onEdit,
       this.isHistory = false});
-  DatabaseReference refillData = FirebaseDatabase.instance.ref().child("refill");
-
+  DatabaseReference refillData =
+      FirebaseDatabase.instance.ref().child("refill");
 
   @override
   Widget build(BuildContext context) {
@@ -559,44 +509,55 @@ class MedicineCard extends StatelessWidget {
                       showDialog(
                           context: context,
                           builder: (BuildContext context) {
-
                             return AlertDialog(
                               title: Center(
-                                child: Text("Confirm Delete",style: GoogleFonts.getFont('Poppins',fontWeight: FontWeight.w500
-                                  // fontSize: 14,
-                                ),
+                                child: Text(
+                                  "Confirm Delete",
+                                  style: GoogleFonts.getFont('Poppins',
+                                      fontWeight: FontWeight.w500
+                                      // fontSize: 14,
+                                      ),
                                   textAlign: TextAlign.center,
-                                  textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
-
+                                  textScaler: TextScaler.linear(
+                                      ScaleSize.textScaleFactor(context)),
                                 ),
                               ),
                               content: Text(
                                   "Are you sure you want to delete this medication?"),
                               actions: [
                                 TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                    },
-                                    child: Text("Cancel",style: GoogleFonts.getFont('Poppins',fontWeight: FontWeight.w400,color: Colors.black
-                                      // fontSize: 14,
-                                    ),
-                                      textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
-
-                                    ),),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: Text(
+                                    "Cancel",
+                                    style: GoogleFonts.getFont('Poppins',
+                                        fontWeight: FontWeight.w400,
+                                        color: Colors.black
+                                        // fontSize: 14,
+                                        ),
+                                    textScaler: TextScaler.linear(
+                                        ScaleSize.textScaleFactor(context)),
+                                  ),
+                                ),
                                 TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                      if (onDelete != null) {
-                                        onDelete!();
-                                      }
-                                    },
-                                    child: Text(
-                                      "Delete",style: GoogleFonts.getFont('Poppins',fontWeight: FontWeight.w400,color: Colors.red
-                                      // fontSize: 14,
-                                    ),
-                                      textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
-
-                                    ),),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                    if (onDelete != null) {
+                                      onDelete!();
+                                    }
+                                  },
+                                  child: Text(
+                                    "Delete",
+                                    style: GoogleFonts.getFont('Poppins',
+                                        fontWeight: FontWeight.w400,
+                                        color: Colors.red
+                                        // fontSize: 14,
+                                        ),
+                                    textScaler: TextScaler.linear(
+                                        ScaleSize.textScaleFactor(context)),
+                                  ),
+                                ),
                               ],
                             );
                           });
@@ -729,7 +690,8 @@ class MedicineCard extends StatelessWidget {
 
                   GestureDetector(
                     onTap: () async {
-                      var authProvider = Provider.of<AppAuthProvider>(context, listen: false);
+                      var authProvider =
+                          Provider.of<AppAuthProvider>(context, listen: false);
                       String? uid = authProvider.firebaseAuthUser?.uid;
                       if (uid == null) return;
 
@@ -743,12 +705,15 @@ class MedicineCard extends StatelessWidget {
                           builder: (context) => StreamBuilder<DatabaseEvent>(
                             stream: refillData.onValue,
                             builder: (context, snapshot) {
-                              if (snapshot.hasData && snapshot.data!.snapshot.value != null) {
-                                final data = snapshot.data!.snapshot.value as Map;
+                              if (snapshot.hasData &&
+                                  snapshot.data!.snapshot.value != null) {
+                                final data =
+                                    snapshot.data!.snapshot.value as Map;
                                 int slot = data['slot'] ?? 0;
                                 bool confirm = data['confirm'] ?? false;
                                 String state = data['state'] ?? 'complete';
-                                String request = data['request']?.toString() ?? 'processed';
+                                String request =
+                                    data['request']?.toString() ?? 'processed';
 
                                 return PillAnimationScreen(
                                   uid: uid,
@@ -763,7 +728,8 @@ class MedicineCard extends StatelessWidget {
                                 );
                               } else {
                                 return Scaffold(
-                                  body: Center(child: CircularProgressIndicator()),
+                                  body: Center(
+                                      child: CircularProgressIndicator()),
                                 );
                               }
                             },
@@ -771,9 +737,9 @@ class MedicineCard extends StatelessWidget {
                         ),
                       );
                     },
-                    child: Icon(Icons.replay_circle_filled, color: Colors.green),
+                    child:
+                        Icon(Icons.replay_circle_filled, color: Colors.green),
                   ),
-
                 ],
               ),
       ),

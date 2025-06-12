@@ -260,6 +260,19 @@ class _FindMyDeviceState extends State<FindMyDevice> {
       ),
     );
   }
+  // void showSnackbar(String message, Color backgroundColor) {
+  //   ScaffoldMessenger.of(context).clearSnackBars();
+  //   ScaffoldMessenger.of(context).showSnackBar(
+  //     SnackBar(
+  //       content: Text('emergency call'),
+  //       action: SnackBarAction(label: 'done', onPressed: () {
+  //
+  //       },),
+  //       backgroundColor: backgroundColor,
+  //       duration: const Duration(seconds: 30),
+  //     ),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -303,15 +316,18 @@ class _FindMyDeviceState extends State<FindMyDevice> {
                         children: [
                           Expanded(
                             child: Center(
-                              child: Text(
-                                '${authProvider.databaseUser!.userName![0].toUpperCase()}${authProvider.databaseUser!.userName!.split(' ')[0].substring(1)}\'s Box',
-                                style: GoogleFonts.getFont(
-                                  'Poppins',
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 20,
+                              child: Padding(
+                                padding: const EdgeInsets.only(left: 60),
+                                child: Text(
+                                  '${authProvider.databaseUser!.userName![0].toUpperCase()}${authProvider.databaseUser!.userName!.split(' ')[0].substring(1)}\'s Box',
+                                  style: GoogleFonts.getFont(
+                                    'Poppins',
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 20,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                  textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
                                 ),
-                                textAlign: TextAlign.center,
-                                textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
                               ),
                             ),
                           ),
@@ -321,7 +337,7 @@ class _FindMyDeviceState extends State<FindMyDevice> {
                             stream: dbRefBatteryPercentage.onValue,
                             builder: (context, snapshot) {
                               if (snapshot.connectionState == ConnectionState.waiting) {
-                                return const CircularProgressIndicator();
+                                return Container(width:15,height:15,child: const CircularProgressIndicator());
                               }
                               if (snapshot.hasData && snapshot.data!.snapshot.value != null) {
                                 final percentage = snapshot.data!.snapshot.value.toString();

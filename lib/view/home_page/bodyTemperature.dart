@@ -24,6 +24,7 @@ class BodyTemperature extends StatefulWidget {
 class _BodyTemperatureState extends State<BodyTemperature> {
   DatabaseReference updatingCommandsHeart =
       FirebaseDatabase.instance.ref("commands");
+  bool hasSavedTemp = false;
 
   Future<void> saveBodyTempReadings(
       double temperatureC, double temperatureF) async {
@@ -47,7 +48,6 @@ class _BodyTemperatureState extends State<BodyTemperature> {
     bool istemperatureFworking = temperatureF != 0;
     bool isCTempH = false;
     bool isCTempL = false;
-    bool hasSavedTemp = false;
     Color ctempColor = Colors.black;
     if (temperatureC >= 36 && temperatureC <= 37.5) {
       ctempColor = Colors.green;
@@ -63,23 +63,27 @@ class _BodyTemperatureState extends State<BodyTemperature> {
         istemperatureCworking || istemperatureFworking;
     dynamic h = MediaQuery.of(context).size.height;
     dynamic w = MediaQuery.of(context).size.width;
-    if (bothTemperatureWorking) {
-      setState(() {
-        measureButton = 'Stop';
-      });
-    } else if (!bothTemperatureWorking) {
-      setState(() {
-        measureButton = 'Measure';
-      });
-    }
-
-    if (!hasSavedTemp && temperatureC != 0 && temperatureF != 0) {
-      hasSavedTemp = true;
-      saveBodyTempReadings(
-        (temperatureC as num).toDouble(),
-        (temperatureF as num).toDouble(),
-      );
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (bothTemperatureWorking) {
+        setState(() {
+          measureButton = 'Stop';
+          if (!hasSavedTemp &&
+              temperatureC != 0 &&
+              temperatureF != 0 &&
+              (bodyTempStatus == 'Stable' && temperatureC > 35)) {
+            hasSavedTemp = true;
+            saveBodyTempReadings(
+              (temperatureC as num).toDouble(),
+              (temperatureF as num).toDouble(),
+            );
+          }
+        });
+      } else if (!bothTemperatureWorking) {
+        setState(() {
+          measureButton = 'Measure';
+        });
+      }
+    });
 
     return Container(
       margin: EdgeInsets.only(top: 10),
@@ -254,6 +258,9 @@ class _BodyTemperatureState extends State<BodyTemperature> {
                 ElevatedButton(
                   onPressed: () async {
                     if (!bothTemperatureWorking) {
+                      setState(() {
+                        hasSavedTemp = false;
+                      });
                       await updatingCommandsHeart.update({
                         "patientTemp": true,
                       });

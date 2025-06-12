@@ -64,6 +64,12 @@ class _AddNewFingerprintState extends State<AddNewFingerprint> {
       return;
     }
 
+    final fingerprintname = fingerprintNameController.text.trim();
+    if (fingerprintname.isEmpty) {
+      _showSnackbar('Please enter a fingerprint name', Colors.red);
+      return;
+    }
+
     final id = int.tryParse(idText);
     if (usedIDs.contains(id)) {
       _showSnackbar("ID already used. Pick another ID", Colors.red);

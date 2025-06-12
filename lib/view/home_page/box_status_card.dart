@@ -83,7 +83,7 @@ class _BoxStatusCardState extends State<BoxStatusCard> {
             SizedBox(height: 4),
             Row(
               children: [
-                Text("Temperature : ${temp}°C",style:GoogleFonts.getFont('Poppins',
+                Text("Temperature : ${temp.toStringAsFixed(1)}°C",style:GoogleFonts.getFont('Poppins',
                   // fontSize: w*0.033,
                   fontSize: 11,
 

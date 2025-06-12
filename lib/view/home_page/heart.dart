@@ -33,7 +33,7 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
     dynamic avgSpO2 = widget.healthMatrixData['avgSpO2'];
     bool fingerPlaced = widget.healthMatrixData['fingerPlaced'];
     int liveBPM = widget.healthMatrixData['liveBPM'];
-    int liveSpO2 = widget.healthMatrixData['liveSpO2'];
+    dynamic liveSpO2 = widget.healthMatrixData['liveSpO2'];
     int processing = widget.healthMatrixData['processing'];
     String status = widget.healthMatrixData['status'];
     dynamic h = MediaQuery.of(context).size.height;
@@ -170,8 +170,12 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
         }
       }
     }
-    if (liveSpO2 < 95) {
+    if (liveSpO2.toInt() < 95) {
       SpO2State = 'Low';
+    }
+    else
+    {
+      SpO2State = 'Normal';
     }
 
     // void showMeasurementDialog(BuildContext context) {

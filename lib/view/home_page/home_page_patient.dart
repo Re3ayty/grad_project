@@ -234,10 +234,10 @@ class _PatientDashboardState extends State<PatientDashboard> {
                       if (snapshot.hasData && snapshot.data!.snapshot.value != null) {
                         final data = snapshot.data!.snapshot.value as Map;
                         int avgBPM = data['avgBPM'] ?? 0;
-                        int avgSpO2 = data['avgSpO2'] ?? 0.0;
+                        dynamic avgSpO2 = data['avgSpO2'] ?? 0.0;
                         bool fingerPlaced = data['fingerPlaced'] ?? false;
                         int liveBPM = data['liveBPM'] ?? 0;
-                        int liveSpO2= data['liveSpO2'] ?? 0;
+                        dynamic liveSpO2= data['liveSpO2'] ?? 0;
                         int processing= data['processing'] ?? 0;
                         String status = data['status'] ?? 'Stopped';
 

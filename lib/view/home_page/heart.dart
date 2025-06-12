@@ -4,15 +4,14 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hcs_grad_project/model/heart_rate_readings.dart';
 import 'package:intl/intl.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:provider/provider.dart';
 
+import '../../model/heart_rate_readings.dart';
 import '../../utils/responsive_text.dart';
-import '../../viewModel/provider/app_auth_provider.dart';
-import 'history_screen.dart';
 import '../../viewModel/firbase_realtime_dao.dart';
+import '../../viewModel/provider/app_auth_provider.dart';
 
 class HealthMetricsCard extends StatefulWidget {
   Map<String, dynamic> healthMatrixData;
@@ -26,16 +25,16 @@ class HealthMetricsCard extends StatefulWidget {
 
 class _HealthMetricsCardState extends State<HealthMetricsCard> {
   DatabaseReference updatingCommandsHeart =
-      FirebaseDatabase.instance.ref("commands");
+  FirebaseDatabase.instance.ref("commands");
 
   @override
   Widget build(BuildContext context) {
     var authProvider = Provider.of<AppAuthProvider>(context);
     int avgBPM = widget.healthMatrixData['avgBPM'];
-    int avgSpO2 = widget.healthMatrixData['avgSpO2'];
+    dynamic avgSpO2 = widget.healthMatrixData['avgSpO2'];
     bool fingerPlaced = widget.healthMatrixData['fingerPlaced'];
     int liveBPM = widget.healthMatrixData['liveBPM'];
-    int liveSpO2 = widget.healthMatrixData['liveSpO2'];
+    dynamic liveSpO2 = widget.healthMatrixData['liveSpO2'];
     int processing = widget.healthMatrixData['processing'];
     String status = widget.healthMatrixData['status'];
     dynamic h = MediaQuery.of(context).size.height;
@@ -172,10 +171,27 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
         }
       }
     }
-    if (liveSpO2 < 95) {
+    if (liveSpO2.toInt() < 95) {
       SpO2State = 'Low';
     }
-
+    else
+    {
+      SpO2State = 'Normal';
+    }
+    if (!fingerPlaced && liveBPM == 0 && liveSpO2 == 0 && processing == 0 && status=="Running") {
+      final uid =
+          Provider.of<AppAuthProvider>(context, listen: false)
+              .firebaseAuthUser
+              ?.uid;
+      if (uid != null) {
+        final boxData = HeartRateData(
+          avgBPM: widget.healthMatrixData['avgBPM'],
+          avgSpO2: widget.healthMatrixData['avgSpO2'],
+          lastUpdated: DateTime.now(),
+        );
+        MedicationBoxDao.addVitalsToUser(uid, boxData);
+      }
+    }
     // void showMeasurementDialog(BuildContext context) {
     //   showDialog(
     //     context: context,
@@ -260,9 +276,9 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
 
                   // Get updated values from the parent widget
                   final bool latestFinger =
-                      widget.healthMatrixData['fingerPlaced'];
+                  widget.healthMatrixData['fingerPlaced'];
                   final int latestProcessing =
-                      widget.healthMatrixData['processing'];
+                  widget.healthMatrixData['processing'];
                   final String latestStatus = widget.healthMatrixData['status'];
 
                   if (mounted) {
@@ -281,20 +297,6 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
                     Navigator.of(context).pop();
                   }
                 });
-                if (liveBPM == 0 && avgBPM != 0) {
-                  final uid =
-                      Provider.of<AppAuthProvider>(context, listen: false)
-                          .firebaseAuthUser
-                          ?.uid;
-                  if (uid != null) {
-                    final boxData = HeartRateData(
-                      avgBPM: widget.healthMatrixData['avgBPM'],
-                      avgSpO2: widget.healthMatrixData['avgSpO2'],
-                      lastUpdated: DateTime.now(),
-                    );
-                    MedicationBoxDao.addVitalsToUser(uid, boxData);
-                  }
-                }
               }
 
               // Only start polling once
@@ -339,12 +341,7 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
         },
       );
     }
-
-    if (bothLiveWorking) {
-      setState(() {
-        measureButton = 'Stop';
-      });
-    } else if (!bothLiveWorking) {
+    if (!bothLiveWorking) {
       setState(() {
         measureButton = 'Measure';
       });
@@ -390,7 +387,7 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
                     fontWeight: FontWeight.w500,
                   ),
                   textScaler:
-                      TextScaler.linear(ScaleSize.textScaleFactor(context)),
+                  TextScaler.linear(ScaleSize.textScaleFactor(context)),
                 ),
               ],
             ),
@@ -406,7 +403,7 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
                     fontWeight: FontWeight.w500,
                   ),
                   textScaler:
-                      TextScaler.linear(ScaleSize.textScaleFactor(context)),
+                  TextScaler.linear(ScaleSize.textScaleFactor(context)),
                 ),
               ),
             ),
@@ -421,7 +418,7 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
                       color: CupertinoColors.inactiveGray,
                       fontSize: 10),
                   textScaler:
-                      TextScaler.linear(ScaleSize.textScaleFactor(context)),
+                  TextScaler.linear(ScaleSize.textScaleFactor(context)),
                 ),
               ),
             ),
@@ -448,7 +445,7 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
                     fontWeight: FontWeight.w500,
                   ),
                   textScaler:
-                      TextScaler.linear(ScaleSize.textScaleFactor(context)),
+                  TextScaler.linear(ScaleSize.textScaleFactor(context)),
                 ),
               ],
             ),
@@ -473,34 +470,51 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
                       color: CupertinoColors.inactiveGray,
                       fontSize: 10),
                   textScaler:
-                      TextScaler.linear(ScaleSize.textScaleFactor(context)),
+                  TextScaler.linear(ScaleSize.textScaleFactor(context)),
                 ),
               ),
             ),
-
+            SizedBox(
+              height: 20,
+            ),
             // Bottom Button
             Center(
               child: Container(
-                width: w * 0.4,
-                height: w * 0.05,
-                child: ElevatedButton(
-                  style: ButtonStyle(
-                      backgroundColor:
-                          MaterialStatePropertyAll(Color(0xffE5E4E3))),
+                width: 200,
+                height:50,
+                child: bothLiveWorking?Center(
+                  child: Text(
+                    'Remove your finger to stop'
+                    // bothLiveWorking?'STOP': "Measure"
+                    ,
+                    style: GoogleFonts.getFont(
+                      'Poppins',
+                      fontWeight: FontWeight.w500,
+                      fontSize: 12,
+                      color: Colors.red.withOpacity(0.4),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ):
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xffE5E4E3),
+                    padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),),
+                  // backgroundColor:
+                  //     MaterialStatePropertyAll(Color(0xffE5E4E3))),
                   onPressed: () async {
                     if (!bothLiveWorking) {
                       await updatingCommandsHeart.update({
                         "healthMonitor": 'START',
                       });
                       showMeasurementDialog(context);
-                    } else {
-                      await updatingCommandsHeart.update({
-                        "healthMonitor": 'STOP',
-                      });
                     }
                   },
                   child: Text(
-                    measureButton
+                    'Measure'
                     // bothLiveWorking?'STOP': "Measure"
                     ,
                     style: GoogleFonts.getFont(
@@ -512,24 +526,24 @@ class _HealthMetricsCardState extends State<HealthMetricsCard> {
                 ),
               ),
             ),
-            Center(
-              child: TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => HistoryScreen()));
-                  },
-                  child: Text(
-                    'Measure Log',
-                    style: GoogleFonts.getFont('Poppins',
-                        fontWeight: FontWeight.w500,
-                        fontSize: 12,
-                        color: Color(0xff98A2B3)),
-                    textScaler:
-                        TextScaler.linear(ScaleSize.textScaleFactor(context)),
-                  )),
-            )
+            // Center(
+            //   child: TextButton(
+            //       onPressed: () {
+            //         Navigator.push(
+            //             context,
+            //             MaterialPageRoute(
+            //                 builder: (context) => HistoryScreen()));
+            //       },
+            //       child: Text(
+            //         'Measure Log',
+            //         style: GoogleFonts.getFont('Poppins',
+            //             fontWeight: FontWeight.w500,
+            //             fontSize: 12,
+            //             color: Color(0xff98A2B3)),
+            //         textScaler:
+            //             TextScaler.linear(ScaleSize.textScaleFactor(context)),
+            //       )),
+            // )
           ],
         ),
       ),

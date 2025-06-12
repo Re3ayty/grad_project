@@ -3,8 +3,8 @@ import 'package:intl/intl.dart';
 
 class HeartRateData {
   String? id;
-  int? avgBPM;
-  int? avgSpO2;
+  dynamic avgBPM;
+  dynamic avgSpO2;
   DateTime? lastUpdated;
 
   HeartRateData({

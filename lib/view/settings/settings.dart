@@ -253,31 +253,31 @@ class _SettingsScreenPageState extends State<SettingsScreenPage> {
                   ),
 
                   SizedBox(height: 20),
-                  Container(
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        color: Color(0xffF4F4F4)),
-                    child: ListTile(
-                      onTap: () {
-                        // Navigator.push(context, MaterialPageRoute(builder: (context) => UserProfileEditScreen()));
-                      },
-                      leading: Icon(
-                        CupertinoIcons.circle_lefthalf_fill,
-                        color: Color(0xff4979FB),
-                      ),
-                      title: Text(
-                        "Theme",
-                        style: GoogleFonts.getFont(
-                          'Poppins', fontWeight: FontWeight.w400,
-                          // fontSize: 14,
-                        ),
-                        textScaler: TextScaler.linear(
-                            ScaleSize.textScaleFactor(context)),
-                      ),
-                      trailing: _buildThemeToggle(),
-                    ),
-                  ),
-                  SizedBox(height: 20),
+                  // Container(
+                  //   decoration: BoxDecoration(
+                  //       borderRadius: BorderRadius.circular(12),
+                  //       color: Color(0xffF4F4F4)),
+                  //   child: ListTile(
+                  //     onTap: () {
+                  //       // Navigator.push(context, MaterialPageRoute(builder: (context) => UserProfileEditScreen()));
+                  //     },
+                  //     leading: Icon(
+                  //       CupertinoIcons.circle_lefthalf_fill,
+                  //       color: Color(0xff4979FB),
+                  //     ),
+                  //     title: Text(
+                  //       "Theme",
+                  //       style: GoogleFonts.getFont(
+                  //         'Poppins', fontWeight: FontWeight.w400,
+                  //         // fontSize: 14,
+                  //       ),
+                  //       textScaler: TextScaler.linear(
+                  //           ScaleSize.textScaleFactor(context)),
+                  //     ),
+                  //     trailing: _buildThemeToggle(),
+                  //   ),
+                  // ),
+                  // SizedBox(height: 20),
                   Container(
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),

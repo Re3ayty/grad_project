@@ -31,7 +31,7 @@ class _HomePageState extends State<HomePage> {
     [
       PatientDashboard(),
       MedicineScreen(),
-      HeartRateHistoryApp(),
+      HeartRateHistoryPage(),
       Geminichatbot(appUser: authProvider.databaseUser!),
     ];
     Size size = MediaQuery.of(context).size;

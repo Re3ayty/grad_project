@@ -46,12 +46,11 @@ Stream<DashboardData> getCombinedDashboardStream() {
     statusStream,
     (humAndTemp, battery, deviceStatus) {
       return DashboardData(
-        temperature: (humAndTemp['temperature'] ?? 0).toDouble(),
-        humidity: (humAndTemp['humidity'] ?? 0).toDouble(),
-        batteryPercentage: (battery['percentage'] ?? 0).toInt(),
-        status: deviceStatus['status'] ?? 'offline',
-        charging: battery['charging'] ?? false
-      );
+          temperature: (humAndTemp['temperature'] ?? 0).toDouble(),
+          humidity: (humAndTemp['humidity'] ?? 0).toDouble(),
+          batteryPercentage: (battery['percentage'] ?? 0).toInt(),
+          status: deviceStatus['status'] ?? 'offline',
+          charging: battery['charging'] ?? false);
     },
   );
 }
@@ -69,10 +68,30 @@ class MedicationBoxDao {
   }
 
   static Future<List<HeartRateData>> getMedicationData(String uid) async {
+    //both heart rate and oxygen saturation
     var heartRateCollection = getMedicationBoxCollection(uid);
     var snapshot = await heartRateCollection.get();
     return snapshot.docs
         .map((doc) => HeartRateData.fromFireStore(doc.id, doc.data()))
+        .toList();
+  }
+
+  static Future<List<HeartRateData>> getHeartRateHistory(String uid) async {
+    var heartRateCollection = getMedicationBoxCollection(uid);
+    var snapshot = await heartRateCollection.get();
+    return snapshot.docs
+        .map((doc) => HeartRateData.fromFireStore(doc.id, doc.data()))
+        .where((data) => data.avgBPM != null && data.lastUpdated != null)
+        .toList();
+  }
+
+  static Future<List<HeartRateData>> getSpO2List(String uid) async {
+    //SpO2 list
+    var collection = getMedicationBoxCollection(uid);
+    var snapshot = await collection.get();
+    return snapshot.docs
+        .map((doc) => HeartRateData.fromFireStore(doc.id, doc.data()))
+        .where((data) => data.avgSpO2 != null && data.lastUpdated != null)
         .toList();
   }
 
@@ -101,6 +120,7 @@ class BodyTempDao {
     var snapshot = await bodyTempCollection.get();
     return snapshot.docs
         .map((doc) => BodyTempReadings.fromFireStore(doc.id, doc.data()))
+        .where((data) => data.bodyTempC != null && data.lastUpdated != null)
         .toList();
   }
 
@@ -133,8 +153,7 @@ class FingerprintDao {
         .toList();
   }
 
-  static Future<void> deleteFingerprintForUser(
-      String uid, String docID) async {
+  static Future<void> deleteFingerprintForUser(String uid, String docID) async {
     var fingerprintCollection = getFingerprintCollection(uid);
     var docRef = fingerprintCollection.doc(docID);
     await docRef.delete();

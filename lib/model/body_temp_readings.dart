@@ -17,11 +17,11 @@ class BodyTempReadings {
   BodyTempReadings.fromFireStore(String docID, Map<String, dynamic>? data)
       : this(
           id: docID,
-          bodyTempC: data?['temperature'] != null
-              ? double.tryParse(data!['temperature'].toString())
+          bodyTempC: data?['temperatureC'] != null
+              ? double.tryParse(data!['temperatureC'].toString())
               : null,
-          bodyTempF: data?['temperature'] != null
-              ? double.tryParse(data!['temperature'].toString())
+          bodyTempF: data?['temperatureF'] != null
+              ? double.tryParse(data!['temperatureF'].toString())
               : null,
           lastUpdated: data?['last_updated'] is Timestamp
               ? (data?['last_updated'] as Timestamp).toDate()

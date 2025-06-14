@@ -17,55 +17,31 @@ class HeartRateHistoryPageState extends State<HeartRateHistoryPage>
     with SingleTickerProviderStateMixin {
   String selectedRange = 'Week';
   late TabController _tabController;
-  final Map<String, List<double>> heartRateRanges = {
-    'Week': [70, 80, 100, 85, 75, 95, 97],
-    'Month': [60, 65, 70, 78, 80, 82, 89, 90, 95, 100, 103, 109],
-    'Year': [75, 80, 85, 90, 95],
-  };
 
-  final Map<String, List<double>> temperatureRanges = {
-    'Week': [36.5, 36.7, 36.8, 37.0, 36.9, 36.6, 36.8],
-    'Month': [
-      36.4,
-      36.6,
-      36.8,
-      37.1,
-      36.9,
-      37.0,
-      36.7,
-      36.5,
-      36.8,
-      37.2,
-      36.6,
-      36.9
-    ],
-    'Year': [36.6, 36.7, 36.8, 36.9, 37.0],
-  };
+  DateTime? selectedDate;
+  bool datePicked = false;
 
-  final Map<String, List<double>> oxygenRanges = {
-    'Week': [95, 96, 97, 98, 99, 98, 97],
-    'Month': [96, 96, 97, 98, 99, 99, 98, 97, 97, 96, 95, 96],
-    'Year': [97, 98, 98, 99, 99],
-  };
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate ?? DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(), // Disallow future dates
+    );
+    if (picked != null) {
+      setState(() {
+        selectedDate = picked;
+        datePicked = true;
+      });
+    }
+  }
 
-  final Map<String, List<String>> xLabels = {
-    'Week': ['Sun', 'Mon', 'Tues', 'Wed', 'Thur', 'Fri', 'Sat'],
-    'Month': [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec'
-    ],
-    'Year': ['2025', '2026', '2027', '2028', '2029'],
-  };
+  DateTime _parseTime(String time, DateTime date) {
+    final format = DateFormat('hh:mm a');
+    final parsedTime = format.parse(time);
+    return DateTime(
+        date.year, date.month, date.day, parsedTime.hour, parsedTime.minute);
+  }
 
   @override
   void initState() {
@@ -81,26 +57,54 @@ class HeartRateHistoryPageState extends State<HeartRateHistoryPage>
             ?.uid ??
         '';
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Text('History', style: TextStyle(color: Colors.black)),
-        centerTitle: true,
         backgroundColor: Colors.white,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(8),
-        child: Column(
+        appBar: AppBar(
+          title: Text('History', style: TextStyle(color: Colors.black)),
+          centerTitle: true,
+          backgroundColor: Colors.white,
+        ),
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Custom Toggle TabBar
-            Row(
-              children: [
-                buildTab('Heart Rate', CupertinoIcons.heart, Colors.red, 0),
-                SizedBox(width: 6),
-                buildTab(
-                    'Temperature', CupertinoIcons.thermometer, Colors.green, 1),
-                SizedBox(width: 6),
-                buildTab('Oxygen Level', CupertinoIcons.drop, Colors.blue, 2),
-              ],
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              // Custom Toggle TabBar
+              child: Row(
+                children: [
+                  buildTab('Heart Rate', CupertinoIcons.heart, Colors.red, 0),
+                  SizedBox(width: 6),
+                  buildTab('Temperature', CupertinoIcons.thermometer,
+                      Colors.green, 1),
+                  SizedBox(width: 6),
+                  buildTab('Oxygen Level', CupertinoIcons.drop, Colors.blue, 2),
+                ],
+              ),
+            ),
+            SizedBox(height: 20),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: InkWell(
+                  onTap: () => _selectDate(context),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.black),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            datePicked
+                                ? 'Pick a date: ${DateFormat("dd/MM/yyyy").format(selectedDate!)}'
+                                : "Pick a date",
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        ),
+                        Icon(Icons.calendar_today, color: Colors.grey),
+                      ],
+                    ),
+                  )),
             ),
             SizedBox(height: 20),
             // Tab Content
@@ -108,8 +112,8 @@ class HeartRateHistoryPageState extends State<HeartRateHistoryPage>
               child: TabBarView(
                 controller: _tabController,
                 children: [
-                  FutureBuilder<List<HeartRateData>>(
-                      future: MedicationBoxDao.getHeartRateHistory(uid),
+                  StreamBuilder<List<HeartRateData>>(
+                      stream: MedicationBoxDao.getHeartRateHistoryStream(uid),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
@@ -120,9 +124,25 @@ class HeartRateHistoryPageState extends State<HeartRateHistoryPage>
                             snapshot.data!.isEmpty) {
                           return Center(child: Text('No data'));
                         }
-                        final data = snapshot.data!;
-                        data.sort(
+                        //for filtering by date
+                        List<HeartRateData> allData = snapshot.data!;
+                        allData.sort(
                             (a, b) => a.lastUpdated!.compareTo(b.lastUpdated!));
+                        List<HeartRateData> data = selectedDate == null
+                            ? allData
+                            : allData
+                                .where((reading) =>
+                                    reading.lastUpdated != null &&
+                                    reading.lastUpdated!.year ==
+                                        selectedDate!.year &&
+                                    reading.lastUpdated!.month ==
+                                        selectedDate!.month &&
+                                    reading.lastUpdated!.day ==
+                                        selectedDate!.day)
+                                .toList();
+                        if (data.isEmpty) {
+                          return Center(child: Text("No data for that day"));
+                        }
 
                         // week start and end dates
                         final latest = data.last.lastUpdated!;
@@ -167,20 +187,53 @@ class HeartRateHistoryPageState extends State<HeartRateHistoryPage>
                           'Sat'
                         ];
 
-                        return buildChartSection(
-                          title: "Heart Rate",
-                          icon: CupertinoIcons.heart,
-                          iconColor: Colors.red,
-                          chartSpots: spots,
-                          xLabels: labels,
-                          minY: 60,
-                          maxY: 160,
-                          yLabelSuffix: ' bpm',
-                          latestValue: '${data.last.avgBPM} BPM',
+                        return ListView(
+                          padding: EdgeInsets.all(16),
+                          children: [
+                            buildChartSection(
+                              title: "Heart Rate",
+                              icon: CupertinoIcons.heart,
+                              iconColor: Colors.red,
+                              chartSpots: spots,
+                              xLabels: labels,
+                              minY: 60,
+                              maxY: 160,
+                              yLabelSuffix: ' bpm',
+                              latestValue: '${data.last.avgBPM} BPM',
+                            ),
+                            SizedBox(height: 20),
+                            ...data.reversed.map((reading) => Container(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 12),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(12),
+                                    color: Colors.grey.shade100,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(CupertinoIcons.heart,
+                                          color: Colors.red),
+                                      SizedBox(width: 10),
+                                      Text("${reading.avgBPM ?? "--"} BPM",
+                                          style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500)),
+                                      Spacer(),
+                                      Text(
+                                          reading.lastUpdated != null
+                                              ? DateFormat("dd/MM/yyyy HH:mm")
+                                                  .format(reading.lastUpdated!)
+                                              : "--",
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold)),
+                                    ],
+                                  ),
+                                )),
+                          ],
                         );
                       }),
-                  FutureBuilder<List<BodyTempReadings>>(
-                      future: BodyTempDao.getBodyTempData(uid),
+                  StreamBuilder<List<BodyTempReadings>>(
+                      stream: BodyTempDao.getBodyTempDataStream(uid),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
@@ -191,9 +244,27 @@ class HeartRateHistoryPageState extends State<HeartRateHistoryPage>
                             snapshot.data!.isEmpty) {
                           return Center(child: Text('No data'));
                         }
-                        final data = snapshot.data!;
-                        data.sort(
+
+                        //for filtering by date
+                        List<BodyTempReadings> allData = snapshot.data!;
+                        allData.sort(
                             (a, b) => a.lastUpdated!.compareTo(b.lastUpdated!));
+                        List<BodyTempReadings> data = selectedDate == null
+                            ? allData
+                            : allData
+                                .where((reading) =>
+                                    reading.lastUpdated != null &&
+                                    reading.lastUpdated!.year ==
+                                        selectedDate!.year &&
+                                    reading.lastUpdated!.month ==
+                                        selectedDate!.month &&
+                                    reading.lastUpdated!.day ==
+                                        selectedDate!.day)
+                                .toList();
+                        if (data.isEmpty) {
+                          return Center(child: Text("No data for that day"));
+                        }
+
                         // week start and end dates
                         final latest = data.last.lastUpdated!;
                         int daysFromSunday = latest.weekday % 7;
@@ -236,20 +307,53 @@ class HeartRateHistoryPageState extends State<HeartRateHistoryPage>
                           'Fri',
                           'Sat'
                         ];
-                        return buildChartSection(
-                          title: "Body Temperature",
-                          icon: CupertinoIcons.thermometer,
-                          iconColor: Colors.green,
-                          chartSpots: spots,
-                          xLabels: labels,
-                          minY: 36.0,
-                          maxY: 45.0,
-                          yLabelSuffix: '°C',
-                          latestValue: '${data.last.bodyTempC}°C',
+                        return ListView(
+                          padding: EdgeInsets.all(16),
+                          children: [
+                            buildChartSection(
+                              title: "Body Temperature",
+                              icon: CupertinoIcons.thermometer,
+                              iconColor: Colors.green,
+                              chartSpots: spots,
+                              xLabels: labels,
+                              minY: 36.0,
+                              maxY: 42.0,
+                              yLabelSuffix: '°C',
+                              latestValue: '${data.last.bodyTempC}°C',
+                            ),
+                            SizedBox(height: 20),
+                            ...data.reversed.map((reading) => Container(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 12),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(12),
+                                    color: Colors.grey.shade100,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(CupertinoIcons.thermometer,
+                                          color: Colors.green),
+                                      SizedBox(width: 10),
+                                      Text("${reading.bodyTempC ?? "--"} °C",
+                                          style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500)),
+                                      Spacer(),
+                                      Text(
+                                          reading.lastUpdated != null
+                                              ? DateFormat("dd/MM/yyyy HH:mm")
+                                                  .format(reading.lastUpdated!)
+                                              : "--",
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold)),
+                                    ],
+                                  ),
+                                )),
+                          ],
                         );
                       }),
-                  FutureBuilder<List<HeartRateData>>(
-                      future: MedicationBoxDao.getSpO2List(uid),
+                  StreamBuilder<List<HeartRateData>>(
+                      stream: MedicationBoxDao.getSpO2HistoryStream(uid),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
@@ -260,9 +364,25 @@ class HeartRateHistoryPageState extends State<HeartRateHistoryPage>
                             snapshot.data!.isEmpty) {
                           return Center(child: Text('No data'));
                         }
-                        final data = snapshot.data!;
-                        data.sort(
+                        //for filtering by date
+                        List<HeartRateData> allData = snapshot.data!;
+                        allData.sort(
                             (a, b) => a.lastUpdated!.compareTo(b.lastUpdated!));
+                        List<HeartRateData> data = selectedDate == null
+                            ? allData
+                            : allData
+                                .where((reading) =>
+                                    reading.lastUpdated != null &&
+                                    reading.lastUpdated!.year ==
+                                        selectedDate!.year &&
+                                    reading.lastUpdated!.month ==
+                                        selectedDate!.month &&
+                                    reading.lastUpdated!.day ==
+                                        selectedDate!.day)
+                                .toList();
+                        if (data.isEmpty) {
+                          return Center(child: Text("No data for that day"));
+                        }
                         // week start and end dates
                         final latest = data.last.lastUpdated!;
                         int daysFromSunday = latest.weekday % 7;
@@ -305,26 +425,56 @@ class HeartRateHistoryPageState extends State<HeartRateHistoryPage>
                           'Fri',
                           'Sat'
                         ];
-
-                        return buildChartSection(
-                          title: "Oxygen Level",
-                          icon: CupertinoIcons.drop,
-                          iconColor: Colors.blue,
-                          chartSpots: spots,
-                          xLabels: labels,
-                          minY: 90.0,
-                          maxY: 100.0,
-                          yLabelSuffix: '%',
-                          latestValue: '${data.last.avgSpO2}%',
+                        return ListView(
+                          padding: EdgeInsets.all(16),
+                          children: [
+                            buildChartSection(
+                              title: "Oxygen Level",
+                              icon: CupertinoIcons.drop,
+                              iconColor: Colors.blue,
+                              chartSpots: spots,
+                              xLabels: labels,
+                              minY: 90.0,
+                              maxY: 100.0,
+                              yLabelSuffix: '%',
+                              latestValue: '${data.last.avgSpO2}%',
+                            ),
+                            SizedBox(height: 20),
+                            ...data.reversed.map((reading) => Container(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 12),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(12),
+                                    color: Colors.grey.shade100,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(CupertinoIcons.drop,
+                                          color: Colors.blue),
+                                      SizedBox(width: 10),
+                                      Text("${reading.avgSpO2 ?? "--"} %",
+                                          style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500)),
+                                      Spacer(),
+                                      Text(
+                                          reading.lastUpdated != null
+                                              ? DateFormat("dd/MM/yyyy HH:mm")
+                                                  .format(reading.lastUpdated!)
+                                              : "--",
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold)),
+                                    ],
+                                  ),
+                                )),
+                          ],
                         );
                       }),
                 ],
               ),
             ),
           ],
-        ),
-      ),
-    );
+        ));
   }
 
   Widget buildTab(String text, IconData icon, Color iconColor, int index) {
@@ -481,25 +631,6 @@ class HeartRateHistoryPageState extends State<HeartRateHistoryPage>
                   ),
                 ),
               ),
-            ],
-          ),
-        ),
-        SizedBox(height: 20),
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            color: Colors.grey.shade100,
-          ),
-          child: Row(
-            children: [
-              Icon(icon, color: iconColor),
-              SizedBox(width: 10),
-              Text(title,
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-              Spacer(),
-              Text("Latest : $latestValue",
-                  style: TextStyle(fontWeight: FontWeight.bold)),
             ],
           ),
         ),

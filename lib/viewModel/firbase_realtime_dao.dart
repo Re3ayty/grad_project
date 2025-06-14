@@ -76,23 +76,20 @@ class MedicationBoxDao {
         .toList();
   }
 
-  static Future<List<HeartRateData>> getHeartRateHistory(String uid) async {
+  static Stream<List<HeartRateData>> getHeartRateHistoryStream(String uid) {
     var heartRateCollection = getMedicationBoxCollection(uid);
-    var snapshot = await heartRateCollection.get();
-    return snapshot.docs
+    return heartRateCollection.snapshots().map((snapshot) => snapshot.docs
         .map((doc) => HeartRateData.fromFireStore(doc.id, doc.data()))
         .where((data) => data.avgBPM != null && data.lastUpdated != null)
-        .toList();
+        .toList());
   }
 
-  static Future<List<HeartRateData>> getSpO2List(String uid) async {
-    //SpO2 list
+  static Stream<List<HeartRateData>> getSpO2HistoryStream(String uid) {
     var collection = getMedicationBoxCollection(uid);
-    var snapshot = await collection.get();
-    return snapshot.docs
+    return collection.snapshots().map((snapshot) => snapshot.docs
         .map((doc) => HeartRateData.fromFireStore(doc.id, doc.data()))
         .where((data) => data.avgSpO2 != null && data.lastUpdated != null)
-        .toList();
+        .toList());
   }
 
   static Future<void> deleteVitalsForUser(String uid, String vitalsId) async {
@@ -115,14 +112,14 @@ class BodyTempDao {
     return bodyTempCollection.add(bodyTempData.toFireStore());
   }
 
-  static Future<List<BodyTempReadings>> getBodyTempData(String uid) async {
-    var bodyTempCollection = getBodyTempCollection(uid);
-    var snapshot = await bodyTempCollection.get();
-    return snapshot.docs
-        .map((doc) => BodyTempReadings.fromFireStore(doc.id, doc.data()))
-        .where((data) => data.bodyTempC != null && data.lastUpdated != null)
-        .toList();
-  }
+  static Stream<List<BodyTempReadings>> getBodyTempDataStream(String uid) {
+  var bodyTempCollection = getBodyTempCollection(uid);
+  return bodyTempCollection.snapshots().map((snapshot) =>
+      snapshot.docs
+          .map((doc) => BodyTempReadings.fromFireStore(doc.id, doc.data()))
+          .where((data) => data.bodyTempC != null && data.lastUpdated != null)
+          .toList());
+}
 
   static Future<void> deleteBodyTempForUser(
       String uid, String bodyTempId) async {

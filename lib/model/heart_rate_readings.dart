@@ -17,11 +17,11 @@ class HeartRateData {
   HeartRateData.fromFireStore(String docID, Map<String, dynamic>? data)
       : this(
           id: docID,
-          avgBPM: data?['avg_BPM'] != null
-              ? int.tryParse(data!['avg_BPM'].toString())
+          avgBPM: data?['avg_bpm'] != null
+              ? int.tryParse(data!['avg_bpm'].toString())
               : null,
-          avgSpO2: data?['avg_SpO2'] != null
-              ? int.tryParse(data!['avg_SpO2'].toString())
+          avgSpO2: data?['avg_spo2'] != null
+              ? int.tryParse(data!['avg_spo2'].toString())
               : null,
           lastUpdated: data?['last_updated'] is Timestamp
               ? (data?['last_updated'] as Timestamp).toDate()

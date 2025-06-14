@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:hcs_grad_project/model/medication_with_status.dart';
+import 'package:hcs_grad_project/viewModel/medicine_dao.dart';
+import 'package:hcs_grad_project/viewModel/provider/app_auth_provider.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import 'medication_reminder.dart'; // PillCard widget
 
@@ -54,7 +58,7 @@ class _MedicationHistoryScreenState extends State<MedicationHistoryScreen> {
         date.year, date.month, date.day, parsedTime.hour, parsedTime.minute);
   }
 
-  List<Widget> buildSection(String title, List<Map<String, dynamic>> meds) {
+  List<Widget> buildSection(String title, List<MedicationStatusData> meds) {
     if (meds.isEmpty) return [];
 
     return [
@@ -66,44 +70,32 @@ class _MedicationHistoryScreenState extends State<MedicationHistoryScreen> {
         Color iconColor;
         Color timeColor;
 
-        final now = DateTime.now();
-        final medTime = _parseTime(med['time'], selectedDate ?? now);
-        final hasStatus = med.containsKey('status');
-
-        if (hasStatus) {
-          switch (med['status']) {
-            case 'taken':
-              icon = Icons.check;
-              iconColor = Colors.green;
-              timeColor = Colors.green;
-              break;
-            case 'missed':
-              icon = Icons.alarm;
-              iconColor = Colors.red;
-              timeColor = Colors.red;
-              break;
-            default:
-              icon = Icons.hourglass_bottom;
-              iconColor = Colors.blue;
-              timeColor = Colors.blue;
-          }
-        } else {
-          if (medTime.isAfter(now)) {
-            icon = Icons.hourglass_bottom;
-            iconColor = Colors.blue;
-            timeColor = Colors.blue;
-          } else {
+        switch (med.status) {
+          case 'acknowledged':
+            icon = Icons.check;
+            iconColor = Colors.green;
+            timeColor = Colors.green;
+            break;
+          case 'missed':
             icon = Icons.alarm;
             iconColor = Colors.red;
             timeColor = Colors.red;
-          }
+            break;
+          default:
+            icon = Icons.hourglass_bottom;
+            iconColor = Colors.blue;
+            timeColor = Colors.blue;
         }
+
+        String displayTime = med.notificationDate != null
+            ? DateFormat('dd/MM/yyyy HH:mm').format(med.notificationDate!)
+            : '';
 
         return PillCard(
           icon: icon,
           iconColor: iconColor,
-          name: med['name'],
-          time: med['time'],
+          name: med.medName!,
+          time: displayTime,
           timeColor: timeColor,
         );
       }).toList(),
@@ -112,22 +104,16 @@ class _MedicationHistoryScreenState extends State<MedicationHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final String selectedDateKey = selectedDate != null
-        ? DateFormat('yyyy-MM-dd').format(selectedDate!)
-        : '';
-
-    final todayMeds = medicationHistory[todayKey] ?? <Map<String, dynamic>>[];
-    final yesterdayMeds =
-        medicationHistory[yesterdayKey] ?? <Map<String, dynamic>>[];
-    final selectedDateMeds = selectedDate != null
-        ? (medicationHistory[selectedDateKey] ?? <Map<String, dynamic>>[])
-        : <Map<String, dynamic>>[];
+    final uid = Provider.of<AppAuthProvider>(context, listen: false)
+            .firebaseAuthUser
+            ?.uid ??
+        '';
 
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         title:
-        Text('Medication History', style: TextStyle(color: Colors.black)),
+            Text('Medication History', style: TextStyle(color: Colors.black)),
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 1,
@@ -164,17 +150,76 @@ class _MedicationHistoryScreenState extends State<MedicationHistoryScreen> {
             ),
 
             SizedBox(height: 24),
+            StreamBuilder<List<MedicationStatusData>>(
+                stream: MedicationStatusDao.getMedicationStatusStream(uid),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error loading data'));
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return Center(child: Text('No data'));
+                  }
+                  List<MedicationStatusData> allMeds = snapshot.data!;
+                  allMeds.sort((a, b) =>
+                      a.notificationDate!.compareTo(b.notificationDate!));
+                  List<MedicationStatusData> data = selectedDate == null
+                      ? allMeds
+                      : allMeds
+                          .where((medsData) =>
+                              medsData.notificationDate != null &&
+                              medsData.notificationDate!.year ==
+                                  selectedDate!.year &&
+                              medsData.notificationDate!.month ==
+                                  selectedDate!.month &&
+                              medsData.notificationDate!.day ==
+                                  selectedDate!.day)
+                          .toList();
+                  if (data.isEmpty) {
+                    return Center(child: Text('No data for that day'));
+                  }
 
-            if (!datePicked) ...[
-              ...buildSection('Today', todayMeds),
-              ...buildSection('Yesterday', yesterdayMeds),
-            ],
+                  return ListView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemCount: data.length,
+                      itemBuilder: (context, index) {
+                        final med = data[index];
+                        IconData icon;
+                        Color iconColor;
+                        Color timeColor;
 
-            if (datePicked)
-              ...buildSection(
-                  DateFormat('dd/MM/yyyy').format(selectedDate!), selectedDateMeds),
+                        switch (med.status) {
+                          case 'acknowledged':
+                            icon = Icons.check;
+                            iconColor = Colors.green;
+                            timeColor = Colors.green;
+                            break;
+                          case 'missed':
+                            icon = Icons.alarm;
+                            iconColor = Colors.red;
+                            timeColor = Colors.red;
+                            break;
+                          default:
+                            icon = Icons.hourglass_bottom;
+                            iconColor = Colors.blue;
+                            timeColor = Colors.blue;
+                        }
 
-            SizedBox(height: 24),
+                        // Format the time as "HH:mm"
+                        String displayTime = med.notificationDate != null
+                            ? DateFormat('HH:mm').format(med.notificationDate!)
+                            : '';
+
+                        return PillCard(
+                          icon: icon,
+                          iconColor: iconColor,
+                          name: med.medName ?? '',
+                          time: displayTime,
+                          timeColor: timeColor,
+                        );
+                      });
+                })
           ],
         ),
       ),

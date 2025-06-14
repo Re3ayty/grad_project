@@ -35,14 +35,7 @@ class HeartRateHistoryPageState extends State<HeartRateHistoryPage>
       });
     }
   }
-
-  DateTime _parseTime(String time, DateTime date) {
-    final format = DateFormat('hh:mm a');
-    final parsedTime = format.parse(time);
-    return DateTime(
-        date.year, date.month, date.day, parsedTime.hour, parsedTime.minute);
-  }
-
+  
   @override
   void initState() {
     super.initState();

@@ -3,10 +3,15 @@ import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hcs_grad_project/viewModel/provider/app_auth_provider.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../../utils/responsive_text.dart';
 import '../add_medication/add_medication_screen.dart';
 import 'Medication_Reminder_History.dart';
+import '../../model/medication_with_status.dart';
+import '../../viewModel/medicine_dao.dart';
 
 class MedicationReminder extends StatefulWidget {
   @override
@@ -14,14 +19,20 @@ class MedicationReminder extends StatefulWidget {
 }
 
 class _MedicationReminderState extends State<MedicationReminder> {
-  Query QueryMedicationReminder = FirebaseDatabase.instance.ref().child('missedmed');
-  DatabaseReference dbRefMedicationReminder = FirebaseDatabase.instance.ref().child('missedmed');
+  Query QueryMedicationReminder =
+      FirebaseDatabase.instance.ref().child('missedmed');
+  DatabaseReference dbRefMedicationReminder =
+      FirebaseDatabase.instance.ref().child('missedmed');
   @override
   Widget build(BuildContext context) {
+    final uid = Provider.of<AppAuthProvider>(context, listen: false)
+            .firebaseAuthUser
+            ?.uid ??
+        '';
     dynamic h = MediaQuery.of(context).size.height;
     dynamic w = MediaQuery.of(context).size.width;
     return Container(
-      height: h*0.4, // Set height as needed
+      height: h * 0.4, // Set height as needed
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
         color: Colors.white,
@@ -31,7 +42,6 @@ class _MedicationReminderState extends State<MedicationReminder> {
             spreadRadius: 5,
             blurRadius: 7,
             offset: Offset(0, 3),
-
           ),
         ],
       ),
@@ -43,34 +53,45 @@ class _MedicationReminderState extends State<MedicationReminder> {
             Row(
               children: [
                 Container(
-                  width: 40,
-                  height: 40,
-                  padding: EdgeInsets.all(8), // space between image and circle border
-                  decoration: BoxDecoration(
-                    color: Color(0xFFD2E4F5), // background color for the circle
-                    shape: BoxShape.circle,
-
-                  ),
-                  child: Icon(CupertinoIcons.bell,color: Color(0xff0658FD),)
-                ),
+                    width: 40,
+                    height: 40,
+                    padding: EdgeInsets.all(
+                        8), // space between image and circle border
+                    decoration: BoxDecoration(
+                      color:
+                          Color(0xFFD2E4F5), // background color for the circle
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      CupertinoIcons.bell,
+                      color: Color(0xff0658FD),
+                    )),
                 SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     "Medication Reminder",
-                    style:GoogleFonts.getFont('Poppins',fontWeight: FontWeight.w500,
+                    style: GoogleFonts.getFont(
+                      'Poppins',
+                      fontWeight: FontWeight.w500,
                     ),
-                    textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
+                    textScaler:
+                        TextScaler.linear(ScaleSize.textScaleFactor(context)),
                   ),
                 ),
                 IconButton(
-                  onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => MedicationHistoryScreen(),));
-                  },
-                    icon: Icon(CupertinoIcons.arrow_up_left_arrow_down_right, color: Colors.grey,))
-
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => MedicationHistoryScreen(),
+                          ));
+                    },
+                    icon: Icon(
+                      CupertinoIcons.arrow_up_left_arrow_down_right,
+                      color: Colors.grey,
+                    ))
               ],
             ),
-
             SizedBox(height: 12),
             Expanded(
               child: StreamBuilder(
@@ -80,7 +101,8 @@ class _MedicationReminderState extends State<MedicationReminder> {
                     return Center(child: Text("No medication today"));
                   }
 
-                  final data = (snapshot.data! as DatabaseEvent).snapshot.value as Map?;
+                  final data =
+                      (snapshot.data! as DatabaseEvent).snapshot.value as Map?;
                   if (data == null || data.isEmpty) {
                     return Center(child: Text("No medication today"));
                   }
@@ -91,7 +113,10 @@ class _MedicationReminderState extends State<MedicationReminder> {
                     if (medTimes is Map) {
                       for (var status in medTimes.values) {
                         final s = status.toString().toLowerCase();
-                        if (s == 'acknowledged' || s == 'missed' || s == 'pending'||s == 'window') {
+                        if (s == 'acknowledged' ||
+                            s == 'missed' ||
+                            s == 'pending' ||
+                            s == 'window') {
                           hasValidMed = true;
                           break;
                         }
@@ -107,7 +132,8 @@ class _MedicationReminderState extends State<MedicationReminder> {
                   return FirebaseAnimatedList(
                     query: QueryMedicationReminder,
                     defaultChild: Center(child: Text('Loading...')),
-                    itemBuilder: (BuildContext context, DataSnapshot snapshot, Animation<double> animation, int index) {
+                    itemBuilder: (BuildContext context, DataSnapshot snapshot,
+                        Animation<double> animation, int index) {
                       Map? medData = snapshot.value as Map?;
                       if (medData == null || medData.isEmpty) {
                         return SizedBox(); // Skip empty
@@ -118,7 +144,42 @@ class _MedicationReminderState extends State<MedicationReminder> {
 
                       medData.forEach((time, status) {
                         final statusStr = status.toString().toLowerCase();
-                        if (statusStr != 'acknowledged' && statusStr != 'missed' && statusStr != 'pending'&& statusStr != 'window') return;
+                        if (statusStr != 'acknowledged' &&
+                            statusStr != 'missed' &&
+                            statusStr != 'pending' &&
+                            statusStr != 'window') return;
+
+                        if (statusStr == 'acknowledged' ||
+                            statusStr == 'missed') {
+                          try {
+                            DateTime notificationDate;
+                            if (time.contains('/')) {
+                              notificationDate =
+                                  DateFormat("dd/MM/yyyy HH:mm").parse(time);
+                            } else {
+                              final now = DateTime.now();
+                              final parsedTime =
+                                  DateFormat("HH:mm").parse(time);
+                              notificationDate = DateTime(
+                                now.year,
+                                now.month,
+                                now.day,
+                                parsedTime.hour,
+                                parsedTime.minute,
+                              );
+                            }
+
+                            MedicationStatusData medStatus =
+                                MedicationStatusData(
+                                    medName: medName,
+                                    status: statusStr,
+                                    notificationDate: notificationDate);
+
+                            MedicationStatusDao.addMedicineStatus(
+                                uid, medStatus);
+                          } catch (e) {}
+                        }
+                        ;
 
                         IconData icon;
                         Color iconColor;
@@ -171,27 +232,34 @@ class _MedicationReminderState extends State<MedicationReminder> {
                 },
               ),
             ),
-
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 TextButton(
-                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AddMedicationScreen(),)),
+                  onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AddMedicationScreen(),
+                      )),
                   child: Text(
-                  "Set a reminders",
-                    style:GoogleFonts.getFont('Poppins',fontWeight: FontWeight.w400,
-                      color:Color.fromRGBO(165, 168, 180, 1),
+                    "Set a reminders",
+                    style: GoogleFonts.getFont(
+                      'Poppins',
+                      fontWeight: FontWeight.w400,
+                      color: Color.fromRGBO(165, 168, 180, 1),
                     ),
-                    textScaler: TextScaler.linear(ScaleSize.textScaleFactor(context)),
+                    textScaler:
+                        TextScaler.linear(ScaleSize.textScaleFactor(context)),
                   ),
                 ),
-                Icon(Icons.settings,color: Color.fromRGBO(165, 168, 180, 1) ,)
+                Icon(
+                  Icons.settings,
+                  color: Color.fromRGBO(165, 168, 180, 1),
+                )
               ],
             ),
-
           ],
         ),
-
       ),
     );
   }
@@ -204,7 +272,12 @@ class PillCard extends StatelessWidget {
   final String time;
   final Color timeColor;
 
-  const PillCard({required this.icon, required this.iconColor, required this.name, required this.time, required this.timeColor});
+  const PillCard(
+      {required this.icon,
+      required this.iconColor,
+      required this.name,
+      required this.time,
+      required this.timeColor});
 
   @override
   Widget build(BuildContext context) {
@@ -215,21 +288,30 @@ class PillCard extends StatelessWidget {
         color: Color(0xffF4F4F4),
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
-          BoxShadow(color: Colors.grey.shade200, blurRadius: 5, spreadRadius: 1, offset: Offset(0, 3))
+          BoxShadow(
+              color: Colors.grey.shade200,
+              blurRadius: 5,
+              spreadRadius: 1,
+              offset: Offset(0, 3))
         ],
       ),
       child: Row(
         children: [
           Container(
-            width: 40,
-            height: 30,
-            decoration: BoxDecoration(
+              width: 40,
+              height: 30,
+              decoration: BoxDecoration(
                 color: Colors.white, // background color for the circle
-                shape: BoxShape.circle,),
+                shape: BoxShape.circle,
+              ),
               child: Icon(icon, color: iconColor, size: 24)),
           SizedBox(width: 12),
-          Expanded(child: Text(name, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600))),
-          Text(time, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: timeColor)),
+          Expanded(
+              child: Text(name,
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600))),
+          Text(time,
+              style: TextStyle(
+                  fontSize: 14, fontWeight: FontWeight.w600, color: timeColor)),
         ],
       ),
     );

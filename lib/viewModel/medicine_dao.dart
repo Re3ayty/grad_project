@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:hcs_grad_project/model/medication_with_status.dart';
 import '../model/user_medicine.dart';
 
 class MedicineDao {
@@ -7,6 +8,7 @@ class MedicineDao {
     var db = FirebaseFirestore.instance;
     return db.collection('usersInfo').doc(uid).collection('medication_to_take');
   }
+
   static Future<DocumentReference> addMedicineAndGetDocRef(
       String uid, Map<String, dynamic> data) async {
     final docRef = FirebaseFirestore.instance
@@ -117,6 +119,35 @@ class MedicineDao {
         .snapshots()
         .map((snapshot) => snapshot.docs
             .map((doc) => MedicineUser.fromFireStore(doc.id, doc.data()))
+            .toList());
+  }
+}
+
+class MedicationStatusDao {
+  static CollectionReference<Map<String, dynamic>> getMedicinesStatusCollection(
+      String uid) {
+    var db = FirebaseFirestore.instance;
+    return db.collection('usersInfo').doc(uid).collection('medication_status');
+  }
+
+  static Future<void> addMedicineStatus(
+      String uid, MedicationStatusData medicine) {
+    var medicinesCollection = getMedicinesStatusCollection(uid);
+    final docID =
+        '${medicine.medName}_${medicine.notificationDate?.millisecondsSinceEpoch ?? ''}_${medicine.status}';
+    return medicinesCollection.doc(docID).set(medicine.toFireStore());
+  }
+
+  static Stream<List<MedicationStatusData>> getMedicationStatusStream(
+      String uid) {
+    return FirebaseFirestore.instance
+        .collection('usersInfo')
+        .doc(uid)
+        .collection('medication_status')
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map(
+                (doc) => MedicationStatusData.fromFireStore(doc.id, doc.data()))
             .toList());
   }
 }
